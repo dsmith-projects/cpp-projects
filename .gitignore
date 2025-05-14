@@ -1,0 +1,10 @@
+# Ignore Windows executables
+*.exe
+
+# Ignore Mac/Linux executables (no extension, but commonly named after the project)
+PruebaCuenta
+
+# Ignore other common build artifacts
+*.out
+*.obj
+*.o
