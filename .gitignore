@@ -33,3 +33,7 @@
 
 # VSCode files
 .vscode/
+
+# Code::blocks files
+.cbp
+.layout 
