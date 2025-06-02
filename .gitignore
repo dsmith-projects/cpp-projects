@@ -33,6 +33,7 @@
 
 # VSCode files
 .vscode/
+.depend
 
 # Code::blocks files
 .cbp
