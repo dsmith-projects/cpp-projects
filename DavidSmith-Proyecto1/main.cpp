@@ -1,6 +1,11 @@
 #include <iostream>
 #include <locale>
 #include <string>
+#include <array>
+#include <vector>
+#include <iomanip> // Para el manejo y manupulación de los caracteres de salida para que tengan formato
+#include <ctime> // para el manejo de fechas y horas
+
 
 
 using namespace std;
@@ -10,13 +15,13 @@ void mostrarMenu();
 
 bool verificarExistenciaTarea(unsigned int);
 
-void solicitarInfoTarea();
+array<string, 5> solicitarInfoTarea();
 
-void agregarTareas();
+void agregarTareas(vector<array<string, 5>>&);
 
 void buscarTarea();
 
-void mostrarTareas();
+void mostrarTareas(vector<array<string, 5>>&);
 
 void eliminarTarea();
 
@@ -30,6 +35,7 @@ int main()
     bool salir{false};
     unsigned int entradaMenu{0};
     bool regresarAMenu = false;
+    vector<array<string, 5>> listaTareas;
 
     do {
         mostrarMenu();
@@ -40,7 +46,7 @@ int main()
         switch (entradaMenu) {
         case 1:
             do {
-                agregarTareas();
+                agregarTareas(listaTareas);
                 regresarAMenu = regresarAlMenu();
             } while(!regresarAMenu);
 
@@ -54,7 +60,7 @@ int main()
             break;
         case 3:
             do {
-                mostrarTareas();
+                mostrarTareas(listaTareas);
                 regresarAMenu = regresarAlMenu();
             } while(!regresarAMenu);
 
@@ -95,46 +101,74 @@ bool verificarExistenciaTarea(unsigned int idTarea) {
     return true;
 }
 
-void solicitarInfoTarea() {
-    unsigned int idTarea{0};
+array<string, 5> solicitarInfoTarea() {
+    string idTarea;
+    //unsigned int idTarea{0};
     string nombreTarea;
     string fechaVencimiento;
     string horaInicio;
     string horaFin;
 
+    const unsigned int datosTarea = 5;
+    array<string, datosTarea> tarea;
+
     cout << "Ingrese la información de la tarea: " << endl;
 
     cout << "Código de la tarea(4 dígitos): ";
     cin >> idTarea;
+    tarea[0] = idTarea;
 
     cout << "Nombre de la tarea: ";
     cin >> nombreTarea;
+    tarea[1] = nombreTarea;
 
     cout << "Fecha de vencimiento (dd/mm/aaaa): ";
     cin >> fechaVencimiento;
+    tarea[2] = fechaVencimiento;
 
     cout << "Hora de inicio (hh:mm): ";
     cin >> horaInicio;
+    tarea[3] = horaInicio;
 
-    cout << "Hora de finización (hh:mm): ";
+    cout << "Hora de finalización (hh:mm): ";
     cin >> horaFin;
+    tarea[4] = horaFin;
 
     cout << endl;
+
+    return tarea;
+
 }
 
-void agregarTareas() {
-
+void agregarTareas(vector<array<string, 5>>& listaTareas) {
     unsigned int cantidadTareas{0};
+    array<string, 5> tarea;
 
     cout << "Ingrese la cantidad de tareas que desea agregar: ";
     cin >> cantidadTareas;
     cout << endl;
 
     for(unsigned int i = 0; i < cantidadTareas; i++){
-        solicitarInfoTarea();
+        tarea = solicitarInfoTarea();
+        cout << endl;
+//        cout << "\nPartes de la tarea:\n";
+//        for (const string& parte : tarea) {
+//            cout << " " << parte;
+//        }
+        listaTareas.push_back(tarea);
+        cout << endl;
         cout << "Tarea agregada exitosamente" << endl;
         cout << endl;
     }
+
+//    for (size_t i = 0; i < listaTareas.size(); i++) {
+//        cout << "Tarea " << (i + 1) << ": ";
+//        for (const string& tarea : listaTareas[i]) {
+//            cout << tarea << " ";
+//        }
+//        cout << endl;
+//    }
+
 }
 
 void buscarTarea() {
@@ -145,8 +179,40 @@ void buscarTarea() {
     cout << endl;
 }
 
-void mostrarTareas() {
+void mostrarTareas(vector<array<string, 5>>& listaTareas) {
+
+    cout << "+------------+----------------------------+----------------------------------+---------------------------+\n";
+    cout << "| " << setw(11) << "Código"
+              << " | " << setw(26) << "Nombre"
+              << " | " << setw(32) << "Fecha Vencimiento"
+              << " | " << setw(25) << "Minutos Invertidos" << " |\n";
+    cout << "+------------+----------------------------+----------------------------------+---------------------------+\n";
+
+    for (size_t i = 0; i < listaTareas.size(); i++) {
+        //cout << "Tarea " << (i + 1) << ": ";
+        //for (const string& tarea : listaTareas[i]) {
+             cout << "| " << setw(10) << listaTareas[i][0]
+              << " | " << setw(26) << listaTareas[i][1]
+              << " | " << setw(32) << listaTareas[i][2]
+              << " | " << setw(25) << listaTareas[i][3]   << " |\n";
+//
+            cout << "+------------+----------------------------+----------------------------------+---------------------------+\n";
+            //cout << tarea << " ";
+       // }
+        cout << endl;
+    }
 }
+
+int calcularDiferenciaTiempoEnMinutos(tm tiempoInicio, tm tiempoFin) {
+    const unsigned int sesenta = 60;
+
+    time_t tiempo1 = mktime(&tiempoInicio);
+    time_t tiempo2 = mktime(&tiempoFin);
+
+    // Compute the difference in seconds and convert to minutes
+    return static_cast<int>(difftime(tiempo2, tiempo1) / sesenta);
+}
+
 
 void eliminarTarea() {
     unsigned int idTarea{0};
