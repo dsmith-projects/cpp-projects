@@ -5,7 +5,7 @@
 #include <vector>
 #include <iomanip> // Para el manejo y manupulación de los caracteres de salida para que tengan formato
 #include <ctime> // para el manejo de fechas y horas
-
+#include <sstream> // para manejar los flujos y separar fechas y horas
 
 
 using namespace std;
@@ -22,6 +22,10 @@ void agregarTareas(vector<array<string, 5>>&);
 void buscarTarea();
 
 void mostrarTareas(vector<array<string, 5>>&);
+
+int calcularDiferenciaTiempoEnMinutos(tm, tm);
+
+tm crearTiempo(string, string);
 
 void eliminarTarea();
 
@@ -180,6 +184,7 @@ void buscarTarea() {
 }
 
 void mostrarTareas(vector<array<string, 5>>& listaTareas) {
+    unsigned int minutosTarea{0};
 
     cout << "+------------+----------------------------+----------------------------------+---------------------------+\n";
     cout << "| " << setw(11) << "Código"
@@ -189,12 +194,16 @@ void mostrarTareas(vector<array<string, 5>>& listaTareas) {
     cout << "+------------+----------------------------+----------------------------------+---------------------------+\n";
 
     for (size_t i = 0; i < listaTareas.size(); i++) {
-        //cout << "Tarea " << (i + 1) << ": ";
-        //for (const string& tarea : listaTareas[i]) {
+
+        tm tiempoInicio = crearTiempo(listaTareas[i][2], listaTareas[i][3]);
+        tm tiempoFin = crearTiempo(listaTareas[i][2], listaTareas[i][4]);
+
+        minutosTarea = calcularDiferenciaTiempoEnMinutos(tiempoInicio, tiempoFin);
+
              cout << "| " << setw(10) << listaTareas[i][0]
               << " | " << setw(26) << listaTareas[i][1]
               << " | " << setw(32) << listaTareas[i][2]
-              << " | " << setw(25) << listaTareas[i][3]   << " |\n";
+              << " | " << setw(25) << minutosTarea   << " |\n";
 //
             cout << "+------------+----------------------------+----------------------------------+---------------------------+\n";
             //cout << tarea << " ";
@@ -211,6 +220,34 @@ int calcularDiferenciaTiempoEnMinutos(tm tiempoInicio, tm tiempoFin) {
 
     // Compute the difference in seconds and convert to minutes
     return static_cast<int>(difftime(tiempo2, tiempo1) / sesenta);
+}
+
+tm crearTiempo(string fecha, string hora) {
+    unsigned int dia{0};
+    unsigned int mes{0};
+    unsigned int ano{0};
+    char separadorFecha = '/';
+
+    stringstream flujoFecha(fecha);
+    flujoFecha >> dia >> separadorFecha >> mes >> separadorFecha >> ano;
+    //cout << "Day: " << dia << ", Month: " << mes << ", Year: " << ano << endl;
+
+    unsigned int horas{0};
+    unsigned int minutos{0};
+    char separadorHora = ':';
+
+    stringstream flujoHora(hora);
+    flujoHora >> horas >> separadorHora >> minutos;
+
+    tm tiempo = {};
+
+    tiempo.tm_year = ano - 1900; // Year (subtract 1900)
+    tiempo.tm_mon = mes;   // June (0-based index)
+    tiempo.tm_mday = dia; // Day of the month
+    tiempo.tm_hour = horas; // Hour (24-hour format)
+    tiempo.tm_min = minutos;
+
+    return tiempo;
 }
 
 
