@@ -13,7 +13,7 @@ using namespace std;
 
 void mostrarMenu();
 
-bool verificarExistenciaTarea(unsigned int);
+bool listaTareasVacia(vector<array<string, 5>>&);
 
 array<string, 5> solicitarInfoTarea();
 
@@ -23,11 +23,15 @@ void buscarTarea();
 
 void mostrarTareas(vector<array<string, 5>>&);
 
-int calcularDiferenciaTiempoEnMinutos(tm, tm);
-
 tm crearTiempo(string, string);
 
-void eliminarTarea();
+int calcularDiferenciaTiempoEnMinutos(tm, tm);
+
+void eliminarTarea(vector<array<string, 5>>&);
+
+int obterIndiceTarea(vector<array<string, 5>>&, string);
+
+void borrarTarea(vector<array<string, 5>>&, int);
 
 bool regresarAlMenu();
 
@@ -71,7 +75,7 @@ int main()
             break;
         case 4:
             do {
-                eliminarTarea();
+                eliminarTarea(listaTareas);
                 regresarAMenu = regresarAlMenu();
             } while(!regresarAMenu);
             break;
@@ -101,8 +105,8 @@ void mostrarMenu() {
     cout << endl;
 }
 
-bool verificarExistenciaTarea(unsigned int idTarea) {
-    return true;
+bool listaTareasVacia(vector<array<string, 5>>& listaTareas) {
+    return listaTareas.empty() ? true : false;
 }
 
 array<string, 5> solicitarInfoTarea() {
@@ -155,30 +159,19 @@ void agregarTareas(vector<array<string, 5>>& listaTareas) {
     for(unsigned int i = 0; i < cantidadTareas; i++){
         tarea = solicitarInfoTarea();
         cout << endl;
-//        cout << "\nPartes de la tarea:\n";
-//        for (const string& parte : tarea) {
-//            cout << " " << parte;
-//        }
+
         listaTareas.push_back(tarea);
         cout << endl;
         cout << "Tarea agregada exitosamente" << endl;
         cout << endl;
     }
 
-//    for (size_t i = 0; i < listaTareas.size(); i++) {
-//        cout << "Tarea " << (i + 1) << ": ";
-//        for (const string& tarea : listaTareas[i]) {
-//            cout << tarea << " ";
-//        }
-//        cout << endl;
-//    }
-
 }
 
 void buscarTarea() {
     unsigned int idTarea{0};
 
-    cout << "Ingrese el código de la tarea a buscar: " << endl;
+    cout << "Ingrese el código de la tarea a buscar: ";
     cin >> idTarea;
     cout << endl;
 }
@@ -204,22 +197,11 @@ void mostrarTareas(vector<array<string, 5>>& listaTareas) {
               << " | " << setw(26) << listaTareas[i][1]
               << " | " << setw(32) << listaTareas[i][2]
               << " | " << setw(25) << minutosTarea   << " |\n";
-//
+
             cout << "+------------+----------------------------+----------------------------------+---------------------------+\n";
-            //cout << tarea << " ";
-       // }
+
         cout << endl;
     }
-}
-
-int calcularDiferenciaTiempoEnMinutos(tm tiempoInicio, tm tiempoFin) {
-    const unsigned int sesenta = 60;
-
-    time_t tiempo1 = mktime(&tiempoInicio);
-    time_t tiempo2 = mktime(&tiempoFin);
-
-    // Compute the difference in seconds and convert to minutes
-    return static_cast<int>(difftime(tiempo2, tiempo1) / sesenta);
 }
 
 tm crearTiempo(string fecha, string hora) {
@@ -250,35 +232,73 @@ tm crearTiempo(string fecha, string hora) {
     return tiempo;
 }
 
+int calcularDiferenciaTiempoEnMinutos(tm tiempoInicio, tm tiempoFin) {
+    const unsigned int sesenta = 60;
 
-void eliminarTarea() {
-    unsigned int idTarea{0};
-    bool tareaExiste{false};
+    time_t tiempo1 = mktime(&tiempoInicio);
+    time_t tiempo2 = mktime(&tiempoFin);
+
+    // Compute the difference in seconds and convert to minutes
+    return static_cast<int>(difftime(tiempo2, tiempo1) / sesenta);
+}
+
+void eliminarTarea(vector<array<string, 5>>& listaTareas) {
+    string idTarea;
+    int indice{0};
+    bool listaVacia{false};
     bool borrarTarea = false;
     char entrada;
 
-    cout << "Ingrese el código de la tarea a eliminar: " << endl;
-    cin >> idTarea;
-    cout << endl;
+    listaVacia = listaTareasVacia(listaTareas); // en lugar de devolver true/false, podria deolver el nombre de la tarea
 
-    tareaExiste = verificarExistenciaTarea(idTarea); // en lugar de devolver true/false, podria deolver el nombre de la tarea
-
-    if(tareaExiste) {
-        cout << "¿Está seguro de que desea eliminar la tarea [Nombre de la tarea]? (S/N): ";
-        cin >> entrada;
+    if(!listaVacia) {
+        cout << "Ingrese el código de la tarea a eliminar: ";
+        cin >> idTarea;
         cout << endl;
 
-        if(entrada == 'S' || entrada == 's') {
-            // ? borrarTarea = true : borrarTarea = false;
+        // Verificar si la tarea existe
+        indice = obterIndiceTarea(listaTareas, idTarea);
+
+        if(indice != -1) {
+            cout << "¿Está seguro de que desea eliminar la tarea " << idTarea << "? (S/N): ";
+            cin >> entrada;
+            cout << endl;
+
+            if(entrada == 'S' || entrada == 's') {
+                // borrar tarea
+                //borrarTarea(listaTareas, indice);
+                cout << "Eliminadaaaaaaaaaa....." << endl;
+                cout << endl;
+            } else {
+
+            }
         } else {
-
+            cout << "No se encontró una tarea con el código de tarea " << idTarea << endl;
+            cout << endl;
         }
-
-
     } else {
-        cout << "El código de la tarea ingresado no existe" << endl;
+        cout << "No hay tareas registradas." << endl;
+        cout << endl;
     }
-    // Codigo para eliminar la tarea
+}
+
+int obterIndiceTarea(vector<array<string, 5>>& listaTareas, string idTarea) {
+    int indice{0};
+
+    for (size_t i = 0; i < listaTareas.size(); ++i) {
+        if (listaTareas[i][0] == idTarea) {
+            cout << "Índice encontrado: " << i << endl;
+            indice = i;
+        } else {
+            indice = -1;
+        }
+    }
+    return indice;
+}
+
+void borrarTarea(vector<array<string, 5>>& listaTareas, int indice) {
+    listaTareas.erase(listaTareas.begin() + indice);
+
 }
 
 bool regresarAlMenu() {
