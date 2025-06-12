@@ -19,7 +19,7 @@ array<string, 5> solicitarInfoTarea();
 
 void agregarTareas(vector<array<string, 5>>&);
 
-void buscarTarea();
+void buscarTarea(vector<array<string, 5>>&);
 
 void mostrarTareas(vector<array<string, 5>>&);
 
@@ -61,7 +61,7 @@ int main()
             break;
         case 2:
             do {
-                buscarTarea();
+                buscarTarea(listaTareas);
                 regresarAMenu = regresarAlMenu();
             } while(!regresarAMenu);
 
@@ -168,30 +168,72 @@ void agregarTareas(vector<array<string, 5>>& listaTareas) {
 
 }
 
-void buscarTarea() {
-    unsigned int idTarea{0};
+void buscarTarea(vector<array<string, 5>>& listaTareas) {
+    string idTarea;
+    bool listaVacia{false};
+    unsigned int minutosTarea{0};
 
-    cout << "Ingrese el código de la tarea a buscar: ";
-    cin >> idTarea;
-    cout << endl;
+    listaVacia = listaTareasVacia(listaTareas); // verifica si hay tareas existentes
+
+    if(!listaVacia) {
+        cout << "Ingrese el código de la tarea que desea buscar: ";
+        cin >> idTarea;
+        cout << endl;
+
+        for (size_t i = 0; i < listaTareas.size(); i++) {
+            if(listaTareas[i][0] == idTarea) {
+                cout << "+------------+----------------------------+----------------------------------+---------------------------+\n";
+                cout << "| " << setw(11) << "Código"
+                      << " | " << setw(26) << "Nombre"
+                      << " | " << setw(32) << "Fecha Vencimiento"
+                      << " | " << setw(25) << "Minutos Invertidos" << " |\n";
+                cout << "+------------+----------------------------+----------------------------------+---------------------------+\n";
+
+                tm tiempoInicio = crearTiempo(listaTareas[i][2], listaTareas[i][3]);
+                tm tiempoFin = crearTiempo(listaTareas[i][2], listaTareas[i][4]);
+                minutosTarea = calcularDiferenciaTiempoEnMinutos(tiempoInicio, tiempoFin);
+
+                cout << "| " << setw(10) << listaTareas[i][0]
+                      << " | " << setw(26) << listaTareas[i][1]
+                      << " | " << setw(32) << listaTareas[i][2]
+                      << " | " << setw(25) << minutosTarea   << " |\n";
+                cout << "+------------+----------------------------+----------------------------------+---------------------------+\n";
+                cout << endl;
+                break;
+
+            } else {
+                cout << "No se encontró una tarea con el código de tarea " << idTarea << endl;
+                cout << endl;
+            }
+        }
+
+
+    } else {
+        cout << "No hay tareas registradas." << endl;
+        cout << endl;
+    }
 }
 
 void mostrarTareas(vector<array<string, 5>>& listaTareas) {
     unsigned int minutosTarea{0};
+    bool listaVacia{false};
 
-    cout << "+------------+----------------------------+----------------------------------+---------------------------+\n";
-    cout << "| " << setw(11) << "Código"
-              << " | " << setw(26) << "Nombre"
-              << " | " << setw(32) << "Fecha Vencimiento"
-              << " | " << setw(25) << "Minutos Invertidos" << " |\n";
-    cout << "+------------+----------------------------+----------------------------------+---------------------------+\n";
+    listaVacia = listaTareasVacia(listaTareas); // verifica si hay tareas existentes
 
-    for (size_t i = 0; i < listaTareas.size(); i++) {
+    if(!listaVacia) {
+        cout << "+------------+----------------------------+----------------------------------+---------------------------+\n";
+        cout << "| " << setw(11) << "Código"
+                  << " | " << setw(26) << "Nombre"
+                  << " | " << setw(32) << "Fecha Vencimiento"
+                  << " | " << setw(25) << "Minutos Invertidos" << " |\n";
+        cout << "+------------+----------------------------+----------------------------------+---------------------------+\n";
 
-        tm tiempoInicio = crearTiempo(listaTareas[i][2], listaTareas[i][3]);
-        tm tiempoFin = crearTiempo(listaTareas[i][2], listaTareas[i][4]);
+        for (size_t i = 0; i < listaTareas.size(); i++) {
 
-        minutosTarea = calcularDiferenciaTiempoEnMinutos(tiempoInicio, tiempoFin);
+            tm tiempoInicio = crearTiempo(listaTareas[i][2], listaTareas[i][3]);
+            tm tiempoFin = crearTiempo(listaTareas[i][2], listaTareas[i][4]);
+
+            minutosTarea = calcularDiferenciaTiempoEnMinutos(tiempoInicio, tiempoFin);
 
              cout << "| " << setw(10) << listaTareas[i][0]
               << " | " << setw(26) << listaTareas[i][1]
@@ -199,7 +241,11 @@ void mostrarTareas(vector<array<string, 5>>& listaTareas) {
               << " | " << setw(25) << minutosTarea   << " |\n";
 
             cout << "+------------+----------------------------+----------------------------------+---------------------------+\n";
+            cout << endl;
+        }
 
+    } else {
+        cout << "No hay tareas registradas." << endl;
         cout << endl;
     }
 }
@@ -288,12 +334,14 @@ int obterIndiceTarea(vector<array<string, 5>>& listaTareas, string idTarea) {
     for (size_t i = 0; i < listaTareas.size(); ++i) {
         if (listaTareas[i][0] == idTarea) {
             cout << "Índice encontrado: " << i << endl;
-            indice = i;
-        } else {
+            //indice = i;
+            return i;
+        } /*else {
             indice = -1;
-        }
+        } */
     }
-    return indice;
+    //return indice;
+    return -1;
 }
 
 void borrarTarea(vector<array<string, 5>>& listaTareas, int indice) {
