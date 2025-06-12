@@ -302,52 +302,39 @@ void eliminarTarea(vector<array<string, 5>>& listaTareas) {
         cin >> idTarea;
         cout << endl;
 
-        // Verificar si la tarea existe
-        indice = obterIndiceTarea(listaTareas, idTarea);
+        for (size_t i = 0; i < listaTareas.size(); ++i) {
+            if (listaTareas[i][0] == idTarea) {
+                cout << "Índice encontrado: " << i << endl;
 
-        if(indice != -1) {
-            cout << "¿Está seguro de que desea eliminar la tarea " << idTarea << "? (S/N): ";
-            cin >> entrada;
-            cout << endl;
-
-            if(entrada == 'S' || entrada == 's') {
-                // borrar tarea
-                //borrarTarea(listaTareas, indice);
-                cout << "Eliminadaaaaaaaaaa....." << endl;
+                cout << "¿Está seguro de que desea eliminar la tarea " << idTarea << "? (S/N): ";
+                cin >> entrada;
                 cout << endl;
-            } else {
 
+                if(entrada == 'S' || entrada == 's') {
+                    // borrar tarea
+                    listaTareas.erase(listaTareas.begin() + i);
+
+                    cout << "Eliminadaaaaaaaaaa....." << endl;
+                    cout << endl;
+
+                    break;
+                } else {
+                    cout << "Tarea no eliminada" << endl;
+                    cout << endl;
+                }
+
+            } else {
+                cout << "No se encontró una tarea con el código de tarea " << idTarea << endl;
+                cout << endl;
             }
-        } else {
-            cout << "No se encontró una tarea con el código de tarea " << idTarea << endl;
-            cout << endl;
         }
+
     } else {
         cout << "No hay tareas registradas." << endl;
         cout << endl;
     }
 }
 
-int obterIndiceTarea(vector<array<string, 5>>& listaTareas, string idTarea) {
-    int indice{0};
-
-    for (size_t i = 0; i < listaTareas.size(); ++i) {
-        if (listaTareas[i][0] == idTarea) {
-            cout << "Índice encontrado: " << i << endl;
-            //indice = i;
-            return i;
-        } /*else {
-            indice = -1;
-        } */
-    }
-    //return indice;
-    return -1;
-}
-
-void borrarTarea(vector<array<string, 5>>& listaTareas, int indice) {
-    listaTareas.erase(listaTareas.begin() + indice);
-
-}
 
 bool regresarAlMenu() {
     bool regresarAMenu = false;
