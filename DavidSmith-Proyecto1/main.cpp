@@ -74,10 +74,10 @@ int main()
 
             break;
         case 4:
-            do {
+            //do {
                 eliminarTarea(listaTareas);
-                regresarAMenu = regresarAlMenu();
-            } while(!regresarAMenu);
+                //regresarAMenu = regresarAlMenu();
+            //} while(!regresarAMenu);
             break;
         case 5:
             salir = true;
@@ -95,9 +95,9 @@ int main()
 
 void mostrarMenu() {
 
-    cout << "¡Menú Principal!" << endl;
+    cout << "* * * Menú Principal * * *" << endl;
     cout << endl;
-    cout << "1. Agregar tareas" << endl;
+    cout << "1. Agregar tareas (entre 1 y 5 tareas)" << endl;
     cout << "2. Buscar tarea" << endl;
     cout << "3. Mostrar todas las tareas" << endl;
     cout << "4. Eliminar tarea" << endl;
@@ -108,6 +108,9 @@ void mostrarMenu() {
 bool listaTareasVacia(vector<array<string, 5>>& listaTareas) {
     return listaTareas.empty() ? true : false;
 }
+
+//string obtenerCodigoTarea() {
+//}
 
 array<string, 5> solicitarInfoTarea() {
     string idTarea;
@@ -122,7 +125,7 @@ array<string, 5> solicitarInfoTarea() {
 
     cout << "Ingrese la información de la tarea: " << endl;
 
-    cout << "Código de la tarea(4 dígitos): ";
+    cout << "Código de la tarea (4 dígitos): ";
     cin >> idTarea;
     tarea[0] = idTarea;
 
@@ -150,11 +153,35 @@ array<string, 5> solicitarInfoTarea() {
 
 void agregarTareas(vector<array<string, 5>>& listaTareas) {
     unsigned int cantidadTareas{0};
+    string entrada;
     array<string, 5> tarea;
+    bool esNumero{false};
+    bool numeroEnRango{false};
 
-    cout << "Ingrese la cantidad de tareas que desea agregar: ";
-    cin >> cantidadTareas;
-    cout << endl;
+    // Seguir pidiendo la cantidad de tareas hasta que esté dentro del rango válido
+    do {
+        cout << "Ingrese la cantidad de tareas que desea agregar (entre 1 y 5): ";
+        cin >> entrada;
+        cout << endl;
+
+        try {
+            cantidadTareas = stoi(entrada); // Intentar convertir a entero
+            esNumero = true;
+            if (cantidadTareas < 1 || cantidadTareas > 5) {
+                cout << "ERROR: Debe ingresar un número entre 1 y 5." << endl;
+                cout << endl;
+            } else {
+                numeroEnRango = true;
+            }
+
+        } catch (exception& e) {
+            cout << "ERROR: Entrada inválida. Por favor, ingrese un número entero entre 1 y 5." << endl;
+            cout << endl;
+        }
+
+
+    } while (!(esNumero && numeroEnRango));
+
 
     for(unsigned int i = 0; i < cantidadTareas; i++){
         tarea = solicitarInfoTarea();
@@ -315,6 +342,7 @@ void eliminarTarea(vector<array<string, 5>>& listaTareas) {
                     listaTareas.erase(listaTareas.begin() + i);
 
                     cout << "Eliminadaaaaaaaaaa....." << endl;
+                    cout << "Tarea eliminada exitosamente." << endl;
                     cout << endl;
 
                     break;
