@@ -50,51 +50,65 @@ int main()
 
     bool salir{false};
     unsigned int entradaMenu{0};
+    string entrada;
     bool regresarAMenu = false;
     vector<array<string, 5>> listaTareas;
 
     do {
         mostrarMenu();
+
         cout << "Ingrese una opción del menú: ";
-        cin >> entradaMenu;
+        getline(cin, entrada);
         cout << endl;
 
-        switch (entradaMenu) {
-        case 1:
-            do {
-                agregarTareas(listaTareas);
-                regresarAMenu = regresarAlMenu();
-            } while(!regresarAMenu);
+        try {
+            entradaMenu = stoi(entrada); // Intentar convertir a número
 
-            break;
-        case 2:
-            do {
-                buscarTarea(listaTareas);
-                regresarAMenu = regresarAlMenu();
-            } while(!regresarAMenu);
+            switch (entradaMenu) {
+            case 1:
+                do {
+                    agregarTareas(listaTareas);
+                    regresarAMenu = regresarAlMenu();
+                } while(!regresarAMenu);
 
-            break;
-        case 3:
-            do {
-                mostrarTareas(listaTareas);
-                regresarAMenu = regresarAlMenu();
-            } while(!regresarAMenu);
+                break;
+            case 2:
+                do {
+                    buscarTarea(listaTareas);
+                    regresarAMenu = regresarAlMenu();
+                } while(!regresarAMenu);
 
-            break;
-        case 4:
-            //do {
-                eliminarTarea(listaTareas);
-                //regresarAMenu = regresarAlMenu();
-            //} while(!regresarAMenu);
-            break;
-        case 5:
-            salir = true;
-            break;
-        default:
-            cout << "Opción inválida. Intente de nuevo." << endl;
+                break;
+            case 3:
+                do {
+                    mostrarTareas(listaTareas);
+                    regresarAMenu = regresarAlMenu();
+                } while(!regresarAMenu);
+
+                break;
+            case 4:
+                //do {
+                    eliminarTarea(listaTareas);
+                    //regresarAMenu = regresarAlMenu();
+                //} while(!regresarAMenu);
+                break;
+            case 5:
+                salir = true;
+                break;
+            default:
+                cout << "Opción inválida. Intente de nuevo." << endl;
+                cout << endl;
+                break;
+            }
+        } catch (exception& e) {
+
+            cout << "ERROR: Entrada inválida. Por favor, ingrese una opción de menú válida." << endl;
             cout << endl;
-            break;
         }
+
+
+
+
     } while (!salir);
 
 
