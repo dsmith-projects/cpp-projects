@@ -15,6 +15,14 @@ void mostrarMenu();
 
 bool listaTareasVacia(vector<array<string, 5>>&);
 
+string obtenerCodigoTarea();
+
+string obtenerNombreTarea();
+
+string obtenerFechaTarea();
+
+string obtenerHoraTarea(string);
+
 array<string, 5> solicitarInfoTarea();
 
 void agregarTareas(vector<array<string, 5>>&);
@@ -109,8 +117,65 @@ bool listaTareasVacia(vector<array<string, 5>>& listaTareas) {
     return listaTareas.empty() ? true : false;
 }
 
-//string obtenerCodigoTarea() {
-//}
+string obtenerCodigoTarea() {
+    string idTarea;
+    unsigned int codigoTarea;
+    bool esNumero{false};
+    bool formatoCorrecto{false};
+
+    do {
+        cout << "Código de la tarea (4 dígitos): ";
+        cin >> idTarea;
+        //cout << endl;
+
+        if (idTarea.length() == 4) {
+            formatoCorrecto = true;
+
+            try {
+                codigoTarea = stoi(idTarea); // Intentar convertir a número
+                esNumero = true;
+            } catch (exception& e) {
+                esNumero = false;
+                cout << "ERROR: Entrada inválida. Por favor, ingrese un código de 4 dígitos." << endl;
+                cout << endl;
+            }
+        } else {
+            formatoCorrecto = false;
+            cout << "ERROR: Debe ingresar un código de 4 dígitos." << endl;
+            cout << endl;
+        }
+
+    } while (!(esNumero && formatoCorrecto));
+
+    return idTarea;
+}
+
+string obtenerNombreTarea() {
+    string nombreTarea;
+
+    cout << "Nombre de la tarea: ";
+    cin >> nombreTarea;
+
+    return nombreTarea;
+}
+
+string obtenerFechaTarea() {
+    string fechaVencimiento;
+
+    cout << "Fecha de vencimiento (dd/mm/aaaa): ";
+    cin >> fechaVencimiento;
+
+    return fechaVencimiento;
+}
+
+string obtenerHoraTarea(string tipoHora) {
+    string hora;
+
+    cout << "Hora de " << tipoHora << " (hh:mm): ";
+    cin >> hora;
+
+    return hora;
+}
 
 array<string, 5> solicitarInfoTarea() {
     string idTarea;
@@ -125,25 +190,11 @@ array<string, 5> solicitarInfoTarea() {
 
     cout << "Ingrese la información de la tarea: " << endl;
 
-    cout << "Código de la tarea (4 dígitos): ";
-    cin >> idTarea;
-    tarea[0] = idTarea;
-
-    cout << "Nombre de la tarea: ";
-    cin >> nombreTarea;
-    tarea[1] = nombreTarea;
-
-    cout << "Fecha de vencimiento (dd/mm/aaaa): ";
-    cin >> fechaVencimiento;
-    tarea[2] = fechaVencimiento;
-
-    cout << "Hora de inicio (hh:mm): ";
-    cin >> horaInicio;
-    tarea[3] = horaInicio;
-
-    cout << "Hora de finalización (hh:mm): ";
-    cin >> horaFin;
-    tarea[4] = horaFin;
+    tarea[0] = obtenerCodigoTarea();
+    tarea[1] = obtenerNombreTarea();
+    tarea[2] = obtenerFechaTarea();
+    tarea[3] = obtenerHoraTarea("inicio");
+    tarea[4] = obtenerHoraTarea("finalización");
 
     cout << endl;
 
