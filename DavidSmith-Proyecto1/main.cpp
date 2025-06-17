@@ -1,4 +1,6 @@
+//David SMith SOlano / 15 de junio / programa de tareas
 #include <iostream>
+
 #include <locale>
 #include <string>
 #include <array>
@@ -6,6 +8,8 @@
 #include <iomanip> // Para el manejo y manupulación de los caracteres de salida para que tengan formato
 #include <ctime> // para el manejo de fechas y horas
 #include <sstream> // para manejar los flujos y separar fechas y horas
+#include <cctype>
+#include <algorithm>
 
 
 using namespace std;
@@ -21,11 +25,15 @@ string obtenerNombreTarea();
 
 string obtenerFechaTarea();
 
+bool esFechaValida(const string&);
+
 string obtenerHoraTarea(string);
 
-array<string, 5> solicitarInfoTarea();
+bool esHoraValida(const string&);
 
-void agregarTareas(vector<array<string, 5>>&);
+array<string, 5> solicitarInfoTarea(int&);
+
+void agregarTareas(vector<array<string, 5>>&, int&);
 
 void buscarTarea(vector<array<string, 5>>&);
 
@@ -35,11 +43,13 @@ tm crearTiempo(string, string);
 
 int calcularDiferenciaTiempoEnMinutos(tm, tm);
 
-void eliminarTarea(vector<array<string, 5>>&);
+void eliminarTarea(vector<array<string, 5>>&, int&);
 
 int obterIndiceTarea(vector<array<string, 5>>&, string);
 
 void borrarTarea(vector<array<string, 5>>&, int);
+
+void mostrarNoHayTareas();
 
 bool regresarAlMenu();
 
@@ -49,7 +59,9 @@ int main()
     setlocale(LC_ALL, "es_ES.UTF-8");
 
     bool salir{false};
-    unsigned int entradaMenu{0};
+    int entradaMenu{0};
+    int contadorTareas{0};
+    const int MAX_VALUE = 5;
     string entrada;
     bool regresarAMenu = false;
     vector<array<string, 5>> listaTareas;
@@ -58,7 +70,8 @@ int main()
         mostrarMenu();
 
         cout << "Ingrese una opción del menú: ";
-        getline(cin, entrada);
+        cin >> entrada;
+        //getline(cin, entrada);
         cout << endl;
 
         try {
@@ -66,37 +79,43 @@ int main()
 
             switch (entradaMenu) {
             case 1:
-                do {
-                    agregarTareas(listaTareas);
-                    regresarAMenu = regresarAlMenu();
-                } while(!regresarAMenu);
+                cout << "Puede agregar un máximo de 5 tareas." << endl;
+                cout << "Cantidad de tareas agregadas: << " << contadorTareas << " >>" << endl;
+                cout << endl;
+                if(contadorTareas == MAX_VALUE) {
+                    cout << "Elimine alguna tarea si desea agregar una nueva tarea" << endl;
+                    cout << endl;
+                } else {
+                    while(contadorTareas < MAX_VALUE) {
+                        agregarTareas(listaTareas, contadorTareas);
+                        ++contadorTareas;
+                        if(contadorTareas < MAX_VALUE) {
+                            if(regresarAlMenu()) {
+                                break;
+                            }
+                        }
+                    }
+                }
 
                 break;
             case 2:
-                do {
+                //do {
                     buscarTarea(listaTareas);
-                    regresarAMenu = regresarAlMenu();
-                } while(!regresarAMenu);
+                  //  regresarAMenu = regresarAlMenu();
+                //} while(!regresarAMenu);
 
                 break;
             case 3:
-                do {
-                    mostrarTareas(listaTareas);
-                    regresarAMenu = regresarAlMenu();
-                } while(!regresarAMenu);
-
+                mostrarTareas(listaTareas);
                 break;
             case 4:
-                //do {
-                    eliminarTarea(listaTareas);
-                    //regresarAMenu = regresarAlMenu();
-                //} while(!regresarAMenu);
+                eliminarTarea(listaTareas, contadorTareas);
                 break;
             case 5:
                 salir = true;
                 break;
             default:
-                cout << "Opción inválida. Intente de nuevo." << endl;
+                cout << "Opción inválida, vuelva a intentarlo." << endl;
                 cout << endl;
                 break;
             }
@@ -119,7 +138,7 @@ void mostrarMenu() {
 
     cout << "* * * Menú Principal * * *" << endl;
     cout << endl;
-    cout << "1. Agregar tareas (entre 1 y 5 tareas)" << endl;
+    cout << "1. Agregar tareas" << endl;
     cout << "2. Buscar tarea" << endl;
     cout << "3. Mostrar todas las tareas" << endl;
     cout << "4. Eliminar tarea" << endl;
@@ -140,6 +159,7 @@ string obtenerCodigoTarea() {
     do {
         cout << "Código de la tarea (4 dígitos): ";
         cin >> idTarea;
+        //getline(cin, idTarea);
         //cout << endl;
 
         if (idTarea.length() == 4) {
@@ -175,23 +195,130 @@ string obtenerNombreTarea() {
 
 string obtenerFechaTarea() {
     string fechaVencimiento;
+    bool formatoValido{false};
 
-    cout << "Fecha de vencimiento (dd/mm/aaaa): ";
-    cin >> fechaVencimiento;
+    do{
+        cout << "Fecha de vencimiento (dd/mm/aaaa): ";
+        cin >> fechaVencimiento;
+
+        if (esFechaValida(fechaVencimiento)) {
+            cout << "Formato válido.\n";
+            formatoValido = true;
+        } else {
+            cout << "ERROR: Formato inválido. Intente de nuevo";
+            cout << endl;
+        }
+
+    } while(!formatoValido);
+
 
     return fechaVencimiento;
 }
 
+bool esFechaValida(const string& fecha) {
+
+    // Verificar que la fecha tenga exactamente 10 caracteres
+    if (fecha.length() != 10) {
+        return false;
+    }
+
+    // Extraer substrings
+    string dia = fecha.substr(0, 2);
+    string mes = fecha.substr(3, 2);
+    string ano = fecha.substr(6, 4);
+    char separador1 = fecha[2];
+    char separador2 = fecha[5];
+
+    // Verificar que los separadores sean '/'
+    if (separador1 != '/' || separador2 != '/') {
+        return false;
+    }
+
+    // Verificar que los componentes sean números
+    if (!all_of(dia.begin(), dia.end(), ::isdigit) ||
+        !all_of(mes.begin(), mes.end(), ::isdigit) ||
+        !all_of(ano.begin(), ano.end(), ::isdigit)) {
+        return false;
+    }
+
+    // Convertir a números
+    int diaNum = stoi(dia);
+    int mesNum = stoi(mes);
+    int anoNum = stoi(ano);
+
+    // Validar rango de días
+    if (diaNum < 1 || diaNum > 31) {
+        return false;
+    }
+
+    // Validación básica del mes
+    if (mesNum < 1 || mesNum > 12) {
+        return false;
+    }
+
+    return true;
+}
+
 string obtenerHoraTarea(string tipoHora) {
     string hora;
+    bool formatoValido{false};
 
-    cout << "Hora de " << tipoHora << " (hh:mm): ";
-    cin >> hora;
+    do{
+        cout << "Hora de " << tipoHora << " (hh:mm): ";
+        cin >> hora;
+
+        if (esHoraValida(hora)) {
+            cout << "Formato válido.\n";
+            formatoValido = true;
+        } else {
+            cout << "ERROR: Formato inválido. Intente de nuevo";
+            cout << endl;
+        }
+
+    } while(!formatoValido);
 
     return hora;
 }
 
-array<string, 5> solicitarInfoTarea() {
+bool esHoraValida(const string& hora) {
+    // Verificar que la cadena tenga exactamente 5 caracteres (hh:mm)
+    if (hora.length() != 5) {
+        return false;
+    }
+
+    // Extraer substrings
+    string horasStr = hora.substr(0, 2);
+    string minutosStr = hora.substr(3, 2);
+    char separador = hora[2];
+
+    // Verificar que el separador sea ':'
+    if (separador != ':') {
+        return false;
+    }
+
+    // Verificar que las partes sean numéricas
+    if (!all_of(horasStr.begin(), horasStr.end(), ::isdigit) ||
+        !all_of(minutosStr.begin(), minutosStr.end(), ::isdigit)) {
+        return false;
+    }
+
+    // Convertir a enteros
+    int horas = stoi(horasStr);
+    int minutos = stoi(minutosStr);
+
+    // Validar rangos
+    if (horas < 0 || horas > 23) {
+        return false;
+    }
+    if (minutos < 0 || minutos > 59) {
+        return false;
+    }
+
+    return true;
+
+}
+
+array<string, 5> solicitarInfoTarea(int& numTarea) {
     string idTarea;
     //unsigned int idTarea{0};
     string nombreTarea;
@@ -202,7 +329,9 @@ array<string, 5> solicitarInfoTarea() {
     const unsigned int datosTarea = 5;
     array<string, datosTarea> tarea;
 
-    cout << "Ingrese la información de la tarea: " << endl;
+    cout << "* * * TAREA " << numTarea + 1 << " * * *" << endl;
+    //cout << "Ingrese la información de la TAREA " << numTarea << ": " << endl;
+    cout << endl;
 
     tarea[0] = obtenerCodigoTarea();
     tarea[1] = obtenerNombreTarea();
@@ -216,53 +345,21 @@ array<string, 5> solicitarInfoTarea() {
 
 }
 
-void agregarTareas(vector<array<string, 5>>& listaTareas) {
-    unsigned int cantidadTareas{0};
+void agregarTareas(vector<array<string, 5>>& listaTareas, int& contadorTareas) {
     string entrada;
     array<string, 5> tarea;
-    bool esNumero{false};
-    bool numeroEnRango{false};
 
-    // Seguir pidiendo la cantidad de tareas hasta que esté dentro del rango válido
-    do {
-        cout << "Ingrese la cantidad de tareas que desea agregar (entre 1 y 5): ";
-        cin >> entrada;
-        cout << endl;
-
-        try {
-            cantidadTareas = stoi(entrada); // Intentar convertir a entero
-            esNumero = true;
-            if (cantidadTareas < 1 || cantidadTareas > 5) {
-                cout << "ERROR: Debe ingresar un número entre 1 y 5." << endl;
-                cout << endl;
-            } else {
-                numeroEnRango = true;
-            }
-
-        } catch (exception& e) {
-            cout << "ERROR: Entrada inválida. Por favor, ingrese un número entero entre 1 y 5." << endl;
-            cout << endl;
-        }
-
-
-    } while (!(esNumero && numeroEnRango));
-
-
-    for(unsigned int i = 0; i < cantidadTareas; i++){
-        tarea = solicitarInfoTarea();
-        cout << endl;
-
-        listaTareas.push_back(tarea);
-        cout << endl;
-        cout << "Tarea agregada exitosamente" << endl;
-        cout << endl;
-    }
-
+    tarea = solicitarInfoTarea(contadorTareas);
+    listaTareas.push_back(tarea);
+    cout << endl;
+    cout << "¡Tarea agregada exitosamente!" << endl;
+    cout << endl;
 }
 
 void buscarTarea(vector<array<string, 5>>& listaTareas) {
     string idTarea;
     bool listaVacia{false};
+    bool tareaEncontrada{false};
     unsigned int minutosTarea{0};
 
     listaVacia = listaTareasVacia(listaTareas); // verifica si hay tareas existentes
@@ -274,6 +371,8 @@ void buscarTarea(vector<array<string, 5>>& listaTareas) {
 
         for (size_t i = 0; i < listaTareas.size(); i++) {
             if(listaTareas[i][0] == idTarea) {
+                tareaEncontrada = true;
+
                 cout << "+------------+----------------------------+----------------------------------+---------------------------+\n";
                 cout << "| " << setw(11) << "Código"
                       << " | " << setw(26) << "Nombre"
@@ -293,16 +392,15 @@ void buscarTarea(vector<array<string, 5>>& listaTareas) {
                 cout << endl;
                 break;
 
-            } else {
-                cout << "No se encontró una tarea con el código de tarea " << idTarea << endl;
-                cout << endl;
             }
         }
-
+        if(!tareaEncontrada) {
+            cout << "No se encontró una tarea con el código de tarea " << idTarea << endl;
+            cout << endl;
+        }
 
     } else {
-        cout << "No hay tareas registradas." << endl;
-        cout << endl;
+        mostrarNoHayTareas();
     }
 }
 
@@ -333,12 +431,10 @@ void mostrarTareas(vector<array<string, 5>>& listaTareas) {
               << " | " << setw(25) << minutosTarea   << " |\n";
 
             cout << "+------------+----------------------------+----------------------------------+---------------------------+\n";
-            cout << endl;
         }
-
-    } else {
-        cout << "No hay tareas registradas." << endl;
         cout << endl;
+    } else {
+        mostrarNoHayTareas();
     }
 }
 
@@ -380,11 +476,10 @@ int calcularDiferenciaTiempoEnMinutos(tm tiempoInicio, tm tiempoFin) {
     return static_cast<int>(difftime(tiempo2, tiempo1) / sesenta);
 }
 
-void eliminarTarea(vector<array<string, 5>>& listaTareas) {
+void eliminarTarea(vector<array<string, 5>>& listaTareas, int& contadorTareas) {
     string idTarea;
-    int indice{0};
     bool listaVacia{false};
-    bool borrarTarea = false;
+    bool tareaEncontrada{false};
     char entrada;
 
     listaVacia = listaTareasVacia(listaTareas); // en lugar de devolver true/false, podria deolver el nombre de la tarea
@@ -396,7 +491,7 @@ void eliminarTarea(vector<array<string, 5>>& listaTareas) {
 
         for (size_t i = 0; i < listaTareas.size(); ++i) {
             if (listaTareas[i][0] == idTarea) {
-                cout << "Índice encontrado: " << i << endl;
+                tareaEncontrada = true;
 
                 cout << "¿Está seguro de que desea eliminar la tarea " << idTarea << "? (S/N): ";
                 cin >> entrada;
@@ -405,6 +500,7 @@ void eliminarTarea(vector<array<string, 5>>& listaTareas) {
                 if(entrada == 'S' || entrada == 's') {
                     // borrar tarea
                     listaTareas.erase(listaTareas.begin() + i);
+                    contadorTareas--;
 
                     cout << "Eliminadaaaaaaaaaa....." << endl;
                     cout << "Tarea eliminada exitosamente." << endl;
@@ -412,32 +508,52 @@ void eliminarTarea(vector<array<string, 5>>& listaTareas) {
 
                     break;
                 } else {
-                    cout << "Tarea no eliminada" << endl;
+                    cout << "Tarea NO eliminada" << endl;
                     cout << endl;
                 }
 
             } else {
-                cout << "No se encontró una tarea con el código de tarea " << idTarea << endl;
-                cout << endl;
+                tareaEncontrada = false;
             }
+        }
+        if(!tareaEncontrada) {
+            cout << "No se encontró una tarea con el código de tarea " << idTarea << endl;
+            cout << endl;
         }
 
     } else {
-        cout << "No hay tareas registradas." << endl;
-        cout << endl;
+        mostrarNoHayTareas();
     }
+}
+
+void mostrarNoHayTareas() {
+    cout << "No hay tareas registradas. Debe ingresar al menos una tarea." << endl;
+    cout << endl;
 }
 
 
 bool regresarAlMenu() {
-    bool regresarAMenu = false;
+    bool regresarAMenu{false};
     char seguir;
+    bool entradaValida{false};
 
-    cout << "¿Desea regresar al menú principal? (S/N): ";
-    cin >> seguir;
-    cout << endl;
+    do {
+        cout << "¿Desea regresar al menú principal? (S/N): ";
+        cin >> seguir;
+        cout << endl;
 
-    seguir == 'S' || seguir == 's' ? regresarAMenu = true : regresarAMenu = false;
+        if (seguir == 's' || seguir == 'S') {
+            regresarAMenu = true;
+            entradaValida = true;
+        } else if (seguir == 'n' || seguir == 'N') {
+            regresarAMenu = false;
+            entradaValida = true;
+        } else {
+            cout << "ERROR: Entrada inválida. Por favor, ingrese (S/N)" << endl;
+            cout << endl;
+        }
+
+    } while(!entradaValida);
 
     return regresarAMenu;
 }
