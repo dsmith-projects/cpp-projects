@@ -32,9 +32,9 @@
 *.app
 
 # VSCode files
-.vscode/
-.depend
+*.vscode/
+*.depend
 
 # Code::blocks files
-.cbp
-.layout 
+*.cbp
+*.layout
