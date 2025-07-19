@@ -12,9 +12,13 @@
 using namespace std;
 
 // Lista de los prototipos de una función.
-
 void mostrarMenu();
 void registrarEstudiante();
+string obtenerIdEstudiante();
+bool esIdValido(const string&);
+void ingresarCalificaciones();
+bool validacionIdentificacion(string);
+bool existeEstudiante(string);
 
 int main()
 {
@@ -41,7 +45,7 @@ int main()
                 registrarEstudiante(); // función que registra un estudiante
                 break;
             case 2:
-                cout << "Test" << endl;
+                ingresarCalificaciones();
 
                 break;
             case 3:
@@ -105,9 +109,8 @@ void registrarEstudiante(){ //Registrar a un estudiante nuevo
     cout << endl;
     //Pedir id de 10 caracteres. Solo numeros
     //Debe ser único, o sea, no repetido
-    cout << "Ingrese la identificación del estudiante (10 dígitos): ";
-    getline(cin, idEstudiante);
 
+    idEstudiante = obtenerIdEstudiante();
     cout << endl;
 
     cout << "Ingrese el nombre completo (nombre y dos apellidos): ";
@@ -159,6 +162,87 @@ void registrarEstudiante(){ //Registrar a un estudiante nuevo
     cout << endl;
 }
 
-//void registrarEstudiante(){ //Registrar a un estudiante nuevo
-//     cout << "Registrar estudiante" ;
-//}
+string obtenerIdEstudiante(){
+    string identificacion;
+    bool idEstudianteValido{false};
+
+    do {
+        cout << "Ingrese la identificación del estudiante (10 dígitos): ";
+        getline(cin, identificacion);
+
+        if(esIdValido(identificacion)) {
+            idEstudianteValido = true;
+        } else {
+            cout << "Identificación inválida. Ingrese una identificación de 10 dígitos, sin letras, ni espacios en blanco." << endl;
+            cout << endl;
+        }
+
+    } while(!idEstudianteValido);
+
+    return identificacion;
+}
+
+bool esIdValido(const string& id) {
+    bool esValido = true;
+
+    if(id.length() != 10){
+        esValido = false;
+    } else {
+        for(char caracter : id) {
+            if(!isdigit(caracter)) {
+                esValido = false;
+                break;
+            }
+        }
+    }
+
+    return esValido;
+}
+
+void ingresarCalificaciones() { //Registrar las calificaciones de un estudiante
+    string idEstudiante;
+    bool esIdValida{false};
+    bool idEncontrado{false};
+    char entrada;
+
+    do {
+
+        cout << "Ingrese la identificación del estudiante (10 dígitos): ";
+        getline(cin, idEstudiante);
+
+        esIdValida = validacionIdentificacion(idEstudiante);
+
+        //validar identificacion identificacionValida(const &idEstudiante)
+        if(esIdValida) {
+            esIdValida = true;
+
+            idEncontrado = existeEstudiante(idEstudiante);
+
+            if(idEncontrado) {
+                // mensaje de encontrado
+                // proceder a ingresar calificaciones
+                cout << "Estudiante registrado. " << endl;
+            } else {
+                cout << "Estudiante no registrado. " << endl;
+                cout << "¿Desea ingresar otra identificación? [S/N]." << endl;
+                entrada = cin.get();
+
+                if(entrada == 'S' || entrada == 's') {
+                    esIdValida = false;
+                }
+            }
+
+        } else {
+            cout << "Identificación inválida. Intente de nuevo: ";
+            cout << endl;
+        }
+    } while(!esIdValida);
+}
+
+bool validacionIdentificacion(string id) {
+    return true;
+}
+
+bool existeEstudiante(string id) {
+    return true;
+}
