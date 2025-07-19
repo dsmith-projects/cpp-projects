@@ -16,6 +16,10 @@ void mostrarMenu();
 void registrarEstudiante();
 string obtenerIdEstudiante();
 bool esIdValido(const string&);
+string obtenerInformacion(const string&);
+string obtenerEdadEstudiante();
+bool esNumerico(const string&);
+bool estaEnRango(const string&);
 void ingresarCalificaciones();
 bool validacionIdentificacion(string);
 bool existeEstudiante(string);
@@ -113,23 +117,25 @@ void registrarEstudiante(){ //Registrar a un estudiante nuevo
     idEstudiante = obtenerIdEstudiante();
     cout << endl;
 
-    cout << "Ingrese el nombre completo (nombre y dos apellidos): ";
-    getline(cin, nombre);
+//    cout << "Ingrese el nombre completo (nombre y dos apellidos): ";
+//    getline(cin, nombre);
+    nombre = obtenerInformacion("Ingrese el nombre completo (nombre y dos apellidos): ");
 
     cout << endl;
 
     cout << "Ingrese el lugar de residencia: " << endl;
-    cout << "    " << left << setw(15) << "- Provincia: ";
-    getline(cin, provincia);
-    cout << "    " << left << setw(15) << "- Cantón: ";
-    getline(cin, canton);
-    cout << "    " << left << setw(15) << "- Distrito: ";
-    getline(cin, distrito);
+    cout << "    " << left << setw(15);// << "- Provincia: ";
+    provincia = obtenerInformacion("- Provincia: ");
+    cout << "    " << left << setw(15);// << "- Cantón: ";
+    canton = obtenerInformacion("- Cantón: ");
+    cout << "    " << left << setw(15);// << "- Distrito: ";
+    distrito = obtenerInformacion("- Distrito: ");
 
     cout << endl;
 
-    cout << "Ingrese la edad: ";
-    getline(cin, edad);
+
+    //edad = obtenerInformacion("Ingrese la edad: ");
+    edad = obtenerEdadEstudiante();
 
     cout << endl;
 
@@ -197,6 +203,68 @@ bool esIdValido(const string& id) {
     }
 
     return esValido;
+}
+
+string obtenerInformacion(const string& enunciado) {
+    string datos;
+
+    cout << enunciado;
+    getline(cin, datos);
+
+    return datos;
+}
+
+string obtenerEdadEstudiante(){
+    string edad;
+    bool edadEstudianteValida{false};
+
+    do {
+        cout << "Ingrese la edad (entre 18 y 100): ";
+        getline(cin, edad);
+
+        if(esNumerico(edad)) {
+            if(estaEnRango(edad)) {
+                edadEstudianteValida = true;
+                break;
+            } else {
+                cout << "Edad inválida. Ingrese una edad numérica entre 18 y 100." << endl;
+            }
+        } else {
+            cout << "Edad inválida. Ingrese una edad numérica entre 18 y 100, sin letras, ni espacios en blanco." << endl;
+            cout << endl;
+        }
+
+    } while(!edadEstudianteValida);
+
+    return edad;
+}
+
+bool esNumerico(const string& edad) {
+    bool esValida = true;
+
+    if(edad.empty()){
+        esValida = false;
+    } else {
+        for(char caracter : edad) {
+            if(!isdigit(caracter)) {
+                esValida = false;
+                break;
+            }
+        }
+    }
+
+    return esValida;
+}
+
+bool estaEnRango(const string& edad) {
+    bool estaEnRango = false;
+    int edadEstudiante = stoi(edad);
+
+    if(edadEstudiante >= 18 && edadEstudiante <= 100) {
+        estaEnRango = true;
+    }
+
+    return estaEnRango;
 }
 
 void ingresarCalificaciones() { //Registrar las calificaciones de un estudiante
