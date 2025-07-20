@@ -20,6 +20,8 @@ string obtenerInformacion(const string&);
 string obtenerEdadEstudiante();
 bool esNumerico(const string&);
 bool estaEnRango(const string&);
+void mostrarOpcionesGenero();
+string obtenerGenero();
 void ingresarCalificaciones();
 bool validacionIdentificacion(string);
 bool existeEstudiante(string);
@@ -111,14 +113,11 @@ void registrarEstudiante(){ //Registrar a un estudiante nuevo
     cout << " ------------------------------------------------" << endl;
 
     cout << endl;
-    //Pedir id de 10 caracteres. Solo numeros
     //Debe ser único, o sea, no repetido
 
     idEstudiante = obtenerIdEstudiante();
     cout << endl;
 
-//    cout << "Ingrese el nombre completo (nombre y dos apellidos): ";
-//    getline(cin, nombre);
     nombre = obtenerInformacion("Ingrese el nombre completo (nombre y dos apellidos): ");
 
     cout << endl;
@@ -133,23 +132,24 @@ void registrarEstudiante(){ //Registrar a un estudiante nuevo
 
     cout << endl;
 
-
-    //edad = obtenerInformacion("Ingrese la edad: ");
     edad = obtenerEdadEstudiante();
 
     cout << endl;
 
     //USar enums y crear un switch
-    cout << "Seleccione el género con el que se identifica: " << endl;
-    cout << "    " << left << setw(15) << "[1] Femenino" << endl;
-    cout << "    " << left << setw(15) << "[2] Masculino" << endl;
-    cout << "    " << left << setw(15) << "[3] Femenino" << endl;
-    cout << "    " << left << setw(15) << "[4] No binario" << endl;
-    cout << "    " << left << setw(15) << "[5] Género fluido" << endl;
-    cout << "    " << left << setw(15) << "[6] Prefiere no decir" << endl;
-    cout << "    " << left << setw(15) << "[7] Otro" << endl;
-    cout << "Opción: ";
-    getline(cin, genero);
+    mostrarOpcionesGenero();
+//    cout << "Seleccione el género con el que se identifica: " << endl;
+//    cout << "    " << left << setw(15) << "[1] Femenino" << endl;
+//    cout << "    " << left << setw(15) << "[2] Masculino" << endl;
+//    cout << "    " << left << setw(15) << "[3] Femenino" << endl;
+//    cout << "    " << left << setw(15) << "[4] No binario" << endl;
+//    cout << "    " << left << setw(15) << "[5] Género fluido" << endl;
+//    cout << "    " << left << setw(15) << "[6] Prefiere no decir" << endl;
+//    cout << "    " << left << setw(15) << "[7] Otro" << endl;
+
+    genero = obtenerGenero();
+//    cout << "Opción: ";
+//    getline(cin, genero);
     cout << "Género seleccionado: " << genero << endl;
 
     cout << endl;
@@ -266,6 +266,42 @@ bool estaEnRango(const string& edad) {
 
     return estaEnRango;
 }
+
+void mostrarOpcionesGenero() {
+    cout << "Seleccione el género con el que se identifica: " << endl;
+    cout << endl;
+    cout << "    " << left << setw(15) << "[1] Femenino" << endl;
+    cout << "    " << left << setw(15) << "[2] Masculino" << endl;
+    cout << "    " << left << setw(15) << "[3] No binario" << endl;
+    cout << endl;
+}
+
+string obtenerGenero() {
+    string entrada;
+
+    while (true) {
+        cout << "Ingrese una opción: ";
+        getline(cin, entrada);
+
+        if (entrada.length() == 1) {
+            char opcion = tolower(entrada[0]);
+
+            switch (opcion) {
+                case '1':
+                    return "femenino";
+                case '2':
+                    return "masculino";
+                case '3':
+                    return "no binario";
+                default:
+                    break;
+            }
+        }
+        cout << endl;
+        cout << "Opción inválida. Ingrese una opción de género válida.\n";
+    }
+}
+
 
 void ingresarCalificaciones() { //Registrar las calificaciones de un estudiante
     string idEstudiante;
