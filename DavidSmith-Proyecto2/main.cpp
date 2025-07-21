@@ -19,12 +19,22 @@ bool esIdValido(const string&);
 string obtenerInformacion(const string&);
 string obtenerEdadEstudiante();
 bool esNumerico(const string&);
-bool estaEnRango(const string&);
+bool estaEnRango(const string&, int, int);
+bool estaEnRangoNotas(const double, double, double);
 void mostrarOpcionesGenero();
 string obtenerGenero();
+void guardarEstudianteEnArchivo(string, string, string, string, string, string);
 void ingresarCalificaciones();
-bool validacionIdentificacion(string);
 bool existeEstudiante(string);
+array<double, 5> solicitarCalificaciones();
+void mostrarNotas(const array<double, 5>&);
+double calcularPromedio(const array<double, 5>&);
+string determinarResultado(double&);
+void mostrarResultadoCurso(double, string);
+void modificarRegistroNotas();
+vector<string> buscarMateriasRegistradasEnArchivo(string);
+array<string, 9> mostrarMateriasRegistradasPorEstudiante(vector<string>&);
+void salvarNotasModificadasEnArchivo(array<string, 9>&);
 
 int main()
 {
@@ -33,7 +43,6 @@ int main()
     bool salir{false};
     int entradaMenu{0};
     string entrada;
-    bool regresarAMenu = false;
 
     do {
         mostrarMenu();
@@ -52,13 +61,12 @@ int main()
                 break;
             case 2:
                 ingresarCalificaciones();
-
                 break;
             case 3:
                 cout << "Test" << endl;
                 break;
             case 4:
-                cout << "Test" << endl;
+                modificarRegistroNotas();
                 break;
             case 5:
                 cout << "Test" << endl;
@@ -136,20 +144,9 @@ void registrarEstudiante(){ //Registrar a un estudiante nuevo
 
     cout << endl;
 
-    //USar enums y crear un switch
     mostrarOpcionesGenero();
-//    cout << "Seleccione el género con el que se identifica: " << endl;
-//    cout << "    " << left << setw(15) << "[1] Femenino" << endl;
-//    cout << "    " << left << setw(15) << "[2] Masculino" << endl;
-//    cout << "    " << left << setw(15) << "[3] Femenino" << endl;
-//    cout << "    " << left << setw(15) << "[4] No binario" << endl;
-//    cout << "    " << left << setw(15) << "[5] Género fluido" << endl;
-//    cout << "    " << left << setw(15) << "[6] Prefiere no decir" << endl;
-//    cout << "    " << left << setw(15) << "[7] Otro" << endl;
 
     genero = obtenerGenero();
-//    cout << "Opción: ";
-//    getline(cin, genero);
     cout << "Género seleccionado: " << genero << endl;
 
     cout << endl;
@@ -160,11 +157,11 @@ void registrarEstudiante(){ //Registrar a un estudiante nuevo
     cout << "Edad: " << edad << endl;
     cout << "Género: " << genero << endl;
 
+    guardarEstudianteEnArchivo(idEstudiante, nombre,provincia, canton, distrito, genero);
     cout << endl;
     cout << "Estudiante registrado con éxito en ESTUDIANTES.txt" << endl;
 
     cout << endl;
-
     cout << endl;
 }
 
@@ -208,10 +205,17 @@ bool esIdValido(const string& id) {
 string obtenerInformacion(const string& enunciado) {
     string datos;
 
-    cout << enunciado;
-    getline(cin, datos);
+    while (true) {
+        cout << enunciado;
+        getline(cin, datos);
 
-    return datos;
+        if (!datos.empty()) {
+            return datos;
+        }
+
+        cout << "Ingrese un valor. Intente de nuevo." << endl;
+    }
+
 }
 
 string obtenerEdadEstudiante(){
@@ -219,11 +223,12 @@ string obtenerEdadEstudiante(){
     bool edadEstudianteValida{false};
 
     do {
-        cout << "Ingrese la edad (entre 18 y 100): ";
-        getline(cin, edad);
+        edad = obtenerInformacion("Ingrese la edad (entre 18 y 100): ");
+//        cout << "Ingrese la edad (entre 18 y 100): ";
+//        getline(cin, edad);
 
         if(esNumerico(edad)) {
-            if(estaEnRango(edad)) {
+            if(estaEnRango(edad, 18, 100)) {
                 edadEstudianteValida = true;
                 break;
             } else {
@@ -239,32 +244,36 @@ string obtenerEdadEstudiante(){
     return edad;
 }
 
-bool esNumerico(const string& edad) {
-    bool esValida = true;
+bool esNumerico(const string& valorIngresado) {
+    bool esValido = true;
 
-    if(edad.empty()){
-        esValida = false;
+    if(valorIngresado.empty()){
+        esValido = false;
     } else {
-        for(char caracter : edad) {
+        for(char caracter : valorIngresado) {
             if(!isdigit(caracter)) {
-                esValida = false;
+                esValido = false;
                 break;
             }
         }
     }
 
-    return esValida;
+    return esValido;
 }
 
-bool estaEnRango(const string& edad) {
+bool estaEnRango(const string& valorIngresado, int limiteInferior, int limiteSuperior) {
     bool estaEnRango = false;
-    int edadEstudiante = stoi(edad);
+    int valorEnNumero = stoi(valorIngresado);
 
-    if(edadEstudiante >= 18 && edadEstudiante <= 100) {
+    if(valorEnNumero >= limiteInferior && valorEnNumero <= limiteSuperior) {
         estaEnRango = true;
     }
 
     return estaEnRango;
+}
+
+bool estaEnRangoNotas(const double valorIngresado, double limiteInferior, double limiteSuperior) {
+    return (valorIngresado >= limiteInferior && valorIngresado <= limiteSuperior) ? true : false;
 }
 
 void mostrarOpcionesGenero() {
@@ -278,10 +287,10 @@ void mostrarOpcionesGenero() {
 
 string obtenerGenero() {
     string entrada;
+    bool opcionValida{false};
 
-    while (true) {
-        cout << "Ingrese una opción: ";
-        getline(cin, entrada);
+    do {
+        entrada = obtenerInformacion("Ingrese una opción: ");
 
         if (entrada.length() == 1) {
             char opcion = tolower(entrada[0]);
@@ -289,64 +298,282 @@ string obtenerGenero() {
             switch (opcion) {
                 case '1':
                     return "femenino";
+                    opcionValida = true;
                 case '2':
                     return "masculino";
+                    opcionValida = true;
                 case '3':
                     return "no binario";
+                    opcionValida = true;
                 default:
                     break;
             }
         }
         cout << endl;
         cout << "Opción inválida. Ingrese una opción de género válida.\n";
-    }
+    } while (!opcionValida);
 }
 
+// Guardar datos del estudante en un arreglo
+
+void guardarEstudianteEnArchivo(string idEstudiante, string nombre, string provincia, string canton, string distrito, string genero) {
+    cout << "Función de guardar los datos del estudiante." << endl;
+}
+
+// Opcion 2: ingresar caliicaciones
 
 void ingresarCalificaciones() { //Registrar las calificaciones de un estudiante
     string idEstudiante;
-    bool esIdValida{false};
     bool idEncontrado{false};
-    char entrada;
+    bool opcionValida{false};
+    string entrada;
+    array<double, 5> notas;
+    double promedio;
+    string estadoCurso;
 
-    do {
+    idEstudiante = obtenerIdEstudiante();
+    idEncontrado = existeEstudiante(idEstudiante);
 
-        cout << "Ingrese la identificación del estudiante (10 dígitos): ";
-        getline(cin, idEstudiante);
+    if(idEncontrado) {
+        // mensaje de encontrado
+        // proceder a ingresar calificaciones
+        cout << "Estudiante registrado. " << endl;
+        notas = solicitarCalificaciones();
 
-        esIdValida = validacionIdentificacion(idEstudiante);
+        mostrarNotas(notas);
 
-        //validar identificacion identificacionValida(const &idEstudiante)
-        if(esIdValida) {
-            esIdValida = true;
+        promedio = calcularPromedio(notas);
+        estadoCurso = determinarResultado(promedio);
+        mostrarResultadoCurso(promedio, estadoCurso);
 
-            idEncontrado = existeEstudiante(idEstudiante);
 
-            if(idEncontrado) {
-                // mensaje de encontrado
-                // proceder a ingresar calificaciones
-                cout << "Estudiante registrado. " << endl;
-            } else {
-                cout << "Estudiante no registrado. " << endl;
-                cout << "¿Desea ingresar otra identificación? [S/N]." << endl;
-                entrada = cin.get();
+    } else {
+        cout << "Estudiante no registrado. " << endl;
+        cout << endl;
+        //cout << "¿Desea ingresar otra identificación? [S/N]." << endl;
+        //entrada = cin.get();
 
-                if(entrada == 'S' || entrada == 's') {
-                    esIdValida = false;
+        do {
+            entrada = obtenerInformacion("¿Desea ingresar otra identificación? [S/N]: ");
+
+            if (entrada.length() == 1) {
+                char opcion = tolower(entrada[0]);
+
+                switch (opcion) {
+                    case 's':
+                    case 'S':
+                        ingresarCalificaciones();
+                        opcionValida = true;
+                    case 'n':
+                    case 'N':
+                        opcionValida = true;
+                        break;
+                    default:
+                        cout << "Opción inválida. Ingrese solo [S/N]."<< endl;
+                        cout << endl;
+                        opcionValida = false;
+                        break;
                 }
+            } else {
+                cout << endl;
+                cout << "Opción inválida. Ingrese una opción válida [S/N]." << endl;
             }
+        } while(!opcionValida);
 
-        } else {
-            cout << "Identificación inválida. Intente de nuevo: ";
-            cout << endl;
-        }
-    } while(!esIdValida);
-}
+    }
 
-bool validacionIdentificacion(string id) {
-    return true;
+    //registrarNotasEnArchivo(idEstudiante, notas);
+
 }
 
 bool existeEstudiante(string id) {
-    return true;
+    return true ;
 }
+
+array<double, 5> solicitarCalificaciones() {
+    string materia;
+    string calificacion;
+    const double CALIF_MIN = 0.0;
+    const double CALIF_MAX = 10.0;
+    array<double, 5> notas;
+    string entrada;
+    double nota;
+    int indiceActividadEvaluativa = 0;
+    string actividadEvaluativa;
+
+    materia = obtenerInformacion("Ingrese el nombre de la materia que cursa: ");
+
+    for (size_t i = 0; i < notas.size(); ++i) {
+        while (true) {
+            indiceActividadEvaluativa = i + 1;
+
+            switch(indiceActividadEvaluativa) {
+                case 1:
+                    actividadEvaluativa = "Proyecto 1";
+                    break;
+                case 2:
+                    actividadEvaluativa = "Proyecto 2";
+                    break;
+                case 3:
+                    actividadEvaluativa = "Ensayo";
+                    break;
+                case 4:
+                    actividadEvaluativa = "Foro";
+                    break;
+                case 5:
+                    actividadEvaluativa = "Defensa";
+                    break;
+                default:
+                    break;
+            }
+
+            cout << "    " << left << setw(15);
+            entrada = obtenerInformacion("- " + actividadEvaluativa +": ");
+
+            try {
+                nota = stod(entrada);
+
+                if (estaEnRangoNotas(nota, CALIF_MIN, CALIF_MAX)) {
+                    notas[i] = nota;
+                    break;
+                } else {
+                    cout << "La nota debe estar entre 0.0 y 10.0." << endl;
+                    cout << endl;
+                }
+            } catch (...) {
+                cout << "Calificación inválida. Ingrese una nota válida." << endl;
+                cout << endl;
+            }
+        }
+    }
+
+    return notas;
+}
+
+void mostrarNotas(const array<double, 5>& notas) {
+    // Mostrar notas ingresadas
+    cout << "Notas ingresadas:" << endl;
+
+    for (size_t i = 0; i < notas.size(); ++i) {
+        cout << "Nota #" << i + 1 << ": " << notas[i] << "\n";
+    }
+}
+
+double calcularPromedio(const array<double, 5>& notas) {
+    double notaFinal = 0.0;
+    const array<double, 5> pesos = {0.1, 0.2, 0.3, 0.1, 0.3};
+
+    for (size_t i = 0; i < notas.size(); ++i) {
+        notaFinal += notas[i] * pesos[i];
+    }
+
+    return notaFinal; // El tamaña del arreglo de notas es 5
+}
+
+string determinarResultado(double& promedio) {
+    if (promedio >= 7.0) {
+        return "Aprobado";
+    } else if (promedio >= 5.0) {
+        return "Reposición";
+    } else {
+        return "Reprobado";
+    }
+}
+
+void mostrarResultadoCurso(double promedio, string estadoCurso) {
+    cout << fixed << setprecision(2);
+    cout << endl;
+    cout << "Promedio del curso: " << promedio << endl;
+    cout << "Estado del estudiante: " << estadoCurso << endl;
+    cout << endl;
+}
+
+// Opción 4: Modificar registro de notas
+
+void modificarRegistroNotas() {
+    string idEstudiante;
+    bool idEncontrado{false};
+    vector<string> registrosPorEstudiante;
+    array<string, 9> registroPorModificar;
+    array<double, 5> notasPorMateriaPorEstudiante;
+    int indiceRegistro = 0;
+
+    idEstudiante = obtenerIdEstudiante();
+    idEncontrado = existeEstudiante(idEstudiante);
+
+    if(idEncontrado) {
+        cout << "Estudiante registrado. " << endl;
+        cout << endl;
+        // Hacer lo que tiene que hacer
+        registrosPorEstudiante = buscarMateriasRegistradasEnArchivo(idEstudiante); // vector con todos los registros que coincidan con el ide del estudiante
+        registroPorModificar = mostrarMateriasRegistradasPorEstudiante(registrosPorEstudiante);
+        salvarNotasModificadasEnArchivo(registroPorModificar);
+    } else {
+        cout << "Estudiante no registrado. " << endl;
+    }
+
+}
+
+vector<string> buscarMateriasRegistradasEnArchivo(string idEstudiante) { // cambiar el tipo del return por un vector de arrays
+    vector<string> registroNotasPorIdEstudiante; // convertir este vector en un vector de arrays
+    // Extraer del archivo una matriz con todos los registros que coincidan con el id del estudiante y devolverlo
+    registroNotasPorIdEstudiante.push_back("Ana");
+    registroNotasPorIdEstudiante.push_back("Carlos");
+    registroNotasPorIdEstudiante.push_back("María");
+    registroNotasPorIdEstudiante.push_back("Luis");
+    registroNotasPorIdEstudiante.push_back("Elena");
+
+    return registroNotasPorIdEstudiante;
+}
+
+// Muestra todas los cursos que coincidan con el id del estudiante y devuelve el registro basado en la materia seleccionada por el usuario
+array<string, 9> mostrarMateriasRegistradasPorEstudiante(vector<string>& registroNotas) { // creo que lo recibe es un vector de arreglos de 9 posiciones
+    array<string, 9> registroPorModificar;
+
+    cout << "Materias registradas:" << endl;
+    cout << endl;
+    cout << "1. Matematicas" << endl;
+    cout << "2. Historia" << endl;
+    cout << endl;
+
+    //Aquí quiero iterar sobre el vector de registro de notas y mostrarlas
+    // Le pido al usuario seleccionar la materia cuyas notas desea cambiar
+    return registroPorModificar;
+}
+
+void salvarNotasModificadasEnArchivo(array<string, 9>& registroNotasModificadas) {
+    // Guardar el archivo con las notas modificadas
+    cout << "Guardar el archivo con las notas modificadas" << endl;
+    cout << endl;
+//    string entrada;
+//    bool opcionValida{false};
+//    int indice{0};
+
+//    do {
+//        entrada = obtenerInformacion("Ingrese una opción: ");
+//
+//        if (entrada.length() == 1) {
+//            char opcion = tolower(entrada[0]);
+//
+//            switch (opcion) {
+//                case '1':
+//                    return "femenino";
+//                    opcionValida = true;
+//                case '2':
+//                    return "masculino";
+//                    opcionValida = true;
+//                case '3':
+//                    return "no binario";
+//                    opcionValida = true;
+//                default:
+//                    break;
+//            }
+//        }
+//        cout << endl;
+//        cout << "Opción inválida. Ingrese una opción de género válida.\n";
+//    } while (!opcionValida);
+}
+
+
+
+
