@@ -1,0 +1,3 @@
+0112660741,David Smith Solano,San Jose,Goicoechea,Guadalupe,39,masculino
+0123564512,Juan Perez Soto,Guanacaste,Nicoya,Belen de Nosarita,29,masculino
+0115208902,Anita Mora Smith,San Jose,Goicoechea,El Carmen,59,femenino

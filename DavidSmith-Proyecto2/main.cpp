@@ -1,6 +1,7 @@
 // David Smith Slano
 // 6 de julio
-// Proyecto 2
+// Proyecto 2: este proyecto trata del manejo de estudiantes y de notas de estudiantes de diferentes cursos.
+// El programa también permite hacer operaciones CRUD de estudiantes y notas y persistencia de datos en archivos.
 
 #include <iostream>
 #include <locale>
@@ -9,11 +10,24 @@
 #include <vector>
 #include <iomanip> // Para el manejo y manipulación de los caracteres de salida para que tengan formato
 
+#include <cstdlib> // Prototipo de exit
+
+// Para el manejo de archivos
+#include <fstream>
+#include <sstream>
+#include <iostream>
+
 using namespace std;
 
+constexpr size_t NUM_ITEMS = 7; // constexpr es una constante computada en tiempo de compilación y no en tiempo de ejecución
+using RegistroEstudiante = array<string, NUM_ITEMS>;
+
+
 // Lista de los prototipos de una función.
+bool cargarArchivoEstudiantesEnMemoria(const string&, vector<RegistroEstudiante>&);
+bool agregarEstudianteAlArchivo(const string&, const array<string, NUM_ITEMS>&);
 void mostrarMenu();
-void registrarEstudiante();
+void registrarEstudiante(const string&);
 string obtenerIdEstudiante();
 bool esIdValido(const string&);
 string obtenerInformacion(const string&);
@@ -23,7 +37,7 @@ bool estaEnRango(const string&, int, int);
 bool estaEnRangoNotas(const double, double, double);
 void mostrarOpcionesGenero();
 string obtenerGenero();
-void guardarEstudianteEnArchivo(string, string, string, string, string, string);
+array<string, 7> guardarEstudianteEnArchivo(const string, const string, const string, const string, const string, const string, const string);
 void ingresarCalificaciones();
 bool existeEstudiante(string);
 array<double, 5> solicitarCalificaciones();
@@ -44,11 +58,29 @@ int main()
     int entradaMenu{0};
     string entrada;
 
+    // Nombre de los archivos
+    string nombreArchivoEstudiantes = "estudiantes.txt";
+    string nombreArchivoNotas = "notas.txt";
+
+    // Matrices para el manejo de estudiantes y de notas
+    vector<array<std::string, 7>> listaEstudiantes;
+//    bool cargaArchivoEstudiantes{false};
+
+
+    if (cargarArchivoEstudiantesEnMemoria(nombreArchivoEstudiantes, listaEstudiantes)) {
+        cout << "Se cargaron " << listaEstudiantes.size() << " registros de estudiantes." << endl;
+        // Proceed with manipulation
+    } //else {
+//        cout << "La carga del archivo de estudiantes falló." << endl;
+//        return 1; // Early exit or offer to create file
+//    }
+
+
+
     do {
         mostrarMenu();
 
         cout << "Ingrese una opción del menú: ";
-        //cin >> entrada;
         getline(cin, entrada);
         cout << endl;
 
@@ -57,7 +89,7 @@ int main()
 
             switch (entradaMenu) {
             case 1:
-                registrarEstudiante(); // función que registra un estudiante
+                registrarEstudiante(nombreArchivoEstudiantes); // función que registra un estudiante
                 break;
             case 2:
                 ingresarCalificaciones();
@@ -93,6 +125,65 @@ int main()
     return 0;
 }
 
+bool cargarArchivoEstudiantesEnMemoria(const string& archivoEstudiantes, vector<RegistroEstudiante>& matrizEstudiantes) {
+
+    ifstream archivo(archivoEstudiantes);
+
+    if (!archivo.is_open()) {
+        cerr << "Error: No se pudo abrir el archivo '" << archivoEstudiantes << endl;
+        return false;
+    }
+
+    string linea;
+
+    while (getline(archivo, linea)) {
+        istringstream ss(linea);
+
+        RegistroEstudiante registro; // Alternativa a escribir array<std::string, 7> registro;
+        string dato;
+
+        for (size_t i = 0; i < NUM_ITEMS; ++i) {
+            if (!getline(ss, dato, ',')) { // Por si hay algún dato incompleto/defectuoso y deseo omitirlo
+                cerr << "Advertencia: Se omitió un registro defectuoso." << endl;
+                break;
+            }
+
+            registro[i] = dato;
+        }
+
+        // Solo cargamos en memoria si realmente habían datos en el archivo
+        if (!registro[0].empty()) {
+            matrizEstudiantes.push_back(registro);
+        }
+
+    }
+
+    archivo.close();
+    return true;
+}
+
+bool agregarEstudianteAlArchivo(const string& archivoEstudiantes, const array<string, NUM_ITEMS>& estudiante) {
+    ofstream archivo(archivoEstudiantes, ios::app); // Abre el archivo en modo de agregar nuevos estudiantes
+
+    if (!archivo.is_open()) {
+        cerr << "Error: No se pudo abrir el archivo '" << archivoEstudiantes << "' para agregar nuevos estudiantes" << endl;
+        return false;
+    }
+
+    // Se escribe cada dato del estudiante separado por una coma
+    for (size_t i = 0; i < NUM_ITEMS; ++i) {
+        archivo << estudiante[i];
+        if (i < NUM_ITEMS - 1) {
+            archivo << ","; // Para evitar la comma después del último dato
+        }
+    }
+    archivo << "\n";
+
+    archivo.close();
+    return true;
+}
+
+
 void mostrarMenu() {
 
     cout << "* * * Menú Principal * * *" << endl;
@@ -107,7 +198,7 @@ void mostrarMenu() {
     cout << endl;
 }
 
-void registrarEstudiante(){ //Registrar a un estudiante nuevo
+void registrarEstudiante(const string& nombreArchivoEstudiantes){ //Registrar a un estudiante nuevo
     string idEstudiante;
     string nombre;
     string provincia;
@@ -115,6 +206,7 @@ void registrarEstudiante(){ //Registrar a un estudiante nuevo
     string distrito;
     string edad;
     string genero;
+    array<string, 7> estudiante;
 
     cout << " ------------------------------------------------" << endl;
     cout << "|" << setw(38) << "REGISTRO DE NUEVO ESTUDIANTE" << setw(11) << "|" << endl;
@@ -157,9 +249,14 @@ void registrarEstudiante(){ //Registrar a un estudiante nuevo
     cout << "Edad: " << edad << endl;
     cout << "Género: " << genero << endl;
 
-    guardarEstudianteEnArchivo(idEstudiante, nombre,provincia, canton, distrito, genero);
+    estudiante = guardarEstudianteEnArchivo(idEstudiante, nombre, provincia, canton, distrito, edad, genero);
     cout << endl;
-    cout << "Estudiante registrado con éxito en ESTUDIANTES.txt" << endl;
+
+    if(agregarEstudianteAlArchivo(nombreArchivoEstudiantes, estudiante)) {
+        cout << "Estudiante registrado con éxito en ESTUDIANTES.txt" << endl;
+    } else {
+        cout << "No se pudo registrar el estudiante en el archivo ESTUDIANTES.txt" << endl;
+    }
 
     cout << endl;
     cout << endl;
@@ -316,8 +413,24 @@ string obtenerGenero() {
 
 // Guardar datos del estudante en un arreglo
 
-void guardarEstudianteEnArchivo(string idEstudiante, string nombre, string provincia, string canton, string distrito, string genero) {
-    cout << "Función de guardar los datos del estudiante." << endl;
+array<string, 7> guardarEstudianteEnArchivo(const string idEstudiante, const string nombre, const string provincia, const string canton, const string distrito, const string edad, const string genero) {
+    array<string, 7> estudiante;
+
+    estudiante[0] = idEstudiante;
+    estudiante[1] = nombre;
+    estudiante[2] = provincia;
+    estudiante[3] = canton;
+    estudiante[4] = distrito;
+    estudiante[5] = edad;
+    estudiante[6] = genero;
+
+    cout << "Función de guardar los datos del estudiante en un arreglo: " << endl;
+
+    for (size_t i = 0; i < estudiante.size(); ++i) {
+        cout << "   - " << i << ": " << estudiante[i] << endl;
+    }
+
+    return estudiante;
 }
 
 // Opcion 2: ingresar caliicaciones
@@ -455,7 +568,7 @@ void mostrarNotas(const array<double, 5>& notas) {
     cout << "Notas ingresadas:" << endl;
 
     for (size_t i = 0; i < notas.size(); ++i) {
-        cout << "Nota #" << i + 1 << ": " << notas[i] << "\n";
+        cout << "Nota #" << i + 1 << ": " << notas[i] << endl;
     }
 }
 
