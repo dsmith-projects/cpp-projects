@@ -1,3 +1,5 @@
-0112660741,David Smith Solano,San Jose,Goicoechea,Guadalupe,39,masculino
-0123564512,Juan Perez Soto,Guanacaste,Nicoya,Belen de Nosarita,29,masculino
-0115208902,Anita Mora Smith,San Jose,Goicoechea,El Carmen,59,femenino
+0112660741,David Smith Solano,San Jose,Goicoechea,Guadalupe,40,masculino
+0113654253,Josue Jimenez Castro,San Jose,Moravia,La Guaria,35,masculino
+0112330202,Diana Sanchez Perez,Heredia,San Pablo,Lomas,27,masculino
+0111331133,Ana Siles Cerdas,Cartago,Oreamuno,Rancho,22,femenino
+0113661344,Carmen,San Jose,San Isidro,Chirripo,64,masculino
