@@ -19,10 +19,10 @@
 
 using namespace std;
 
+constexpr size_t NUM_CERO = 0; // Índice que contiene el id de un estudiante
+constexpr size_t NUM_CINCO = 5;
 constexpr size_t NUM_SIETE = 7; // constexpr es una constante computada en tiempo de compilación y no en tiempo de ejecución
 constexpr size_t NUM_NUEVE = 9;
-constexpr size_t NUM_CINCO = 5;
-constexpr size_t INDICE_ID = 0; // Índice que contiene el id de un estudiante
 
 using RegistroEstudiante = array<string, NUM_SIETE>;
 
@@ -34,6 +34,7 @@ bool cargarArchivoNotasEnMemoria(const string&, vector<array<string, NUM_NUEVE>>
 bool agregarEstudianteAlArchivo(const string&, const array<string, NUM_SIETE>&);
 bool agregarNotasAlArchivo(const string&, const array<string, NUM_NUEVE>&);
 bool sobrescribirArchivoEstudiantes(const string&, const vector<RegistroEstudiante>&);
+bool sobrescribirArchivoNotas(const string&, const vector<array<string, NUM_NUEVE>>&);
 void mostrarMenu();
 void registrarEstudiante(const string&, vector<RegistroEstudiante>&);
 string obtenerIdEstudiante();
@@ -47,7 +48,7 @@ void mostrarOpcionesGenero();
 string obtenerGenero();
 array<string, NUM_SIETE> guardarEstudianteEnArchivo(const string, const string, const string, const string, const string, const string, const string);
 void ingresarCalificaciones(const string&, const vector<RegistroEstudiante>&, const string&, vector<array<string, NUM_NUEVE>>&);
-array<string, NUM_NUEVE> guardarNotasEnArchivo(const string&, const string&, const array<double, NUM_CINCO>&, const double&, const string&);
+array<string, NUM_NUEVE> guardarNotasEnArreglo(const string&, const string&, const array<double, NUM_CINCO>&, const double&, const string&);
 string doubleToString(double value);
 bool existeEstudiante(const string, const vector<RegistroEstudiante>&);
 array<double, NUM_CINCO> solicitarCalificaciones();
@@ -57,8 +58,9 @@ string determinarResultado(double&);
 void mostrarResultadoCurso(double, string);
 void modificarDatosEstudiante(const string&, vector<RegistroEstudiante>&);
 bool hacerPreguntaDeRespuestaBinaria(const string&);
-void modificarRegistroNotas(const string&, const vector<RegistroEstudiante>&);
-vector<string> buscarMateriasRegistradasEnArchivo(string);
+void modificarRegistroNotas(const string&, const vector<RegistroEstudiante>&, const string&, vector<array<string, NUM_NUEVE>>&);
+//vector<array<string, NUM_NUEVE>>
+void buscarMateriasRegistradasPorEstudiante(string, vector<array<string, NUM_NUEVE>>&);
 array<string, 9> mostrarMateriasRegistradasPorEstudiante(vector<string>&);
 void salvarNotasModificadasEnArchivo(array<string, NUM_NUEVE>&);
 void reporteEstudiantes(const string&, const vector<RegistroEstudiante>&, const string&, const vector<array<string, NUM_NUEVE>>&);
@@ -119,7 +121,7 @@ int main()
                 continuar();
                 break;
             case 4:
-                modificarRegistroNotas(nombreArchivoEstudiantes, listaEstudiantes);
+                modificarRegistroNotas(nombreArchivoEstudiantes, listaEstudiantes, nombreArchivoNotas, notasEstudiantes);
                 continuar();
                 break;
             case 5:
@@ -295,7 +297,25 @@ bool sobrescribirArchivoEstudiantes(const string& archivoEstudiantes, const vect
     return true;
 }
 
+bool sobrescribirArchivoNotas(const string& archivoNotas, const vector<array<string, NUM_NUEVE>>& matrizNotas) {
+    ofstream archivo(archivoNotas); // abrir archivo en modo de sobrescrtura
 
+    if (!archivo.is_open()) {
+        cerr << "Error: No se pudo abrir el archivo '" << archivoNotas << "' para sobrescribirlo." << endl;
+        return false;
+    }
+
+    for (const auto& registro : matrizNotas) {
+        for (size_t i = 0; i < NUM_NUEVE; ++i) {
+            archivo << registro[i];
+            if (i < NUM_NUEVE - 1) archivo << ","; // agrega el delimitador de coma excepto en la última posición
+        }
+        archivo << "\n";
+    }
+
+    archivo.close();
+    return true;
+}
 
 void mostrarMenu() {
 
@@ -585,7 +605,7 @@ void ingresarCalificaciones(const string& archivoEstudiantes, const vector<Regis
 
         mostrarResultadoCurso(promedio, estadoCurso);
 
-        calificaciones = guardarNotasEnArchivo(idEstudiante, materia, notas, promedio, estadoCurso);
+        calificaciones = guardarNotasEnArreglo(idEstudiante, materia, notas, promedio, estadoCurso);
         cout << endl;
 
         if(agregarNotasAlArchivo(archivoNotas, calificaciones)) {
@@ -605,8 +625,6 @@ void ingresarCalificaciones(const string& archivoEstudiantes, const vector<Regis
     } else {
         cout << "Estudiante no registrado. " << endl;
         cout << endl;
-        //cout << "¿Desea ingresar otra identificación? [S/N]." << endl;
-        //entrada = cin.get();
 
         do {
             entrada = obtenerInformacion("¿Desea ingresar otra identificación? [S/N]: ");
@@ -637,11 +655,9 @@ void ingresarCalificaciones(const string& archivoEstudiantes, const vector<Regis
 
     }
 
-    //registrarNotasEnArchivo(idEstudiante, notas);
-
 }
 
-array<string, NUM_NUEVE> guardarNotasEnArchivo(const string& idEstudiante, const string& materia, const array<double, NUM_CINCO>& calificaciones, const double& promedio, const string& estado) {
+array<string, NUM_NUEVE> guardarNotasEnArreglo(const string& idEstudiante, const string& materia, const array<double, NUM_CINCO>& calificaciones, const double& promedio, const string& estado) {
     array<string, NUM_NUEVE> notas;
 
     notas[0] = idEstudiante;
@@ -675,7 +691,7 @@ string doubleToString(double value) {
 
 bool existeEstudiante(const string id, const vector<RegistroEstudiante>& matrizEstudiantes) {
     for (const auto& registro : matrizEstudiantes) {
-        if (registro[INDICE_ID] == id) {
+        if (registro[NUM_CERO] == id) {
             return true; // estudiante fue encontrado
         }
     }
@@ -781,36 +797,6 @@ void mostrarResultadoCurso(double promedio, string estadoCurso) {
 // Opción 3: Modificar datos de un estudiante
 
 void modificarDatosEstudiante(const string& archivoEstudiantes, vector<RegistroEstudiante>& matrizEstudiantes) {
-
-
-//
-//    string idEstudiante;
-//    bool idEncontrado{false};
-//
-//    idEstudiante = obtenerIdEstudiante();
-//    // Revisar si el archivo existe o tal vez no. Solo revisar si en memoria el vector no esta vacio
-//    idEncontrado = existeEstudiante(idEstudiante, matrizEstudiantes); // Revisar si el id existe en el archivo
-//
-//    if(idEncontrado) {
-//        cout << "Estudiante registrado. " << endl;
-//        cout << endl;
-//        // Hacer lo que tiene que hacer
-//        // modificar registro y verificarlo
-//        // llamar a la funcion que sobreescribe el archivo
-//    } else {
-//        cout << "Estudiante no registrado. " << endl;
-//    }
-//
-//    1. pedir id
-//    2. buscar id
-//    3. Si no se encuentra, preguntar si desea ingresar de nuevo. S/N
-//        3.1 Si S, pedir id de nuevo
-//        3.2 buscar id en archivo
-//    4. Si si lo encuentra, mostrar informacion al usuario
-//    5. Pedir al usuario la nueva informacion
-//    6. Actualizar el arreglo dentro del vector
-//    7. Llamar a la funcion que reescribe el archivo
-
     string idEstudiante;
     string opcion;
     string entrada;
@@ -841,7 +827,7 @@ void modificarDatosEstudiante(const string& archivoEstudiantes, vector<RegistroE
 
 
         for (auto& registro : matrizEstudiantes) {
-            if (registro[INDICE_ID] == idEstudiante) {
+            if (registro[NUM_CERO] == idEstudiante) {
                 cout << "Registro de estudiante encontrado:" << endl;
 
                 cout << "    " << left << setw(15) << "- Edad: " << registro[5] << endl;
@@ -849,37 +835,6 @@ void modificarDatosEstudiante(const string& archivoEstudiantes, vector<RegistroE
                 cout << "    " << left << setw(15) << "- Cantón: " << registro[3] << endl;
                 cout << "    " << left << setw(15) << "- Distrito: " << registro[4] << endl;
                 cout << endl;
-
-//                for (size_t i = 0; i < NUM_SIETE; ++i) {
-//                    if(i == 2) {
-//                        cout << "    " << left << setw(15) << "- Provincia: " << registro[i] << endl;
-//                    }
-//                    if(i == 3) {
-//                        cout << "    " << left << setw(15) << "- Cantón: " << registro[i] << endl;
-//                    }
-//                    if(i == 4) {
-//                        cout << "    " << left << setw(15) << "- Distrito: " << registro[i] << endl;
-//                    }
-//                    if(i == 5) {
-//                        cout << "    " << left << setw(15) << "- Edad: " << registro[i] << endl;
-//                    }
-//                }
-
-                // ✏️ Ask what to update
-//                cout << "Enter new Edad: ";
-//                cin >> registro[5];
-//
-//                cout << "Enter new Provincia: ";
-//                cin >> registro[2];
-//
-//                cout << "Enter new Canton: ";
-//                cin >> registro[3];
-//
-//                cout << "Enter new Distrito: ";
-//                cin >> registro[4];
-//
-//                cout << "Record successfully updated.\n";
-//                break;
 
                 // Preguntar al usuario, ¿qué desea actualizar?
                 do {
@@ -975,13 +930,15 @@ bool hacerPreguntaDeRespuestaBinaria(const string& pregunta) {
 
 // Opción 4: Modificar registro de notas
 
-void modificarRegistroNotas(const string& nombreArchivoEstudiantes, const vector<RegistroEstudiante>& matrizEstudiantes) { // agregar el nombre del archivo de estudiantes y al matriz de estudiantes
+void modificarRegistroNotas(const string& archivoEstudiantes, const vector<RegistroEstudiante>& matrizEstudiantes, const string& archivoNotas, vector<array<string, NUM_NUEVE>>& matrizNotas) { // agregar el nombre del archivo de estudiantes y al matriz de estudiantes
     string idEstudiante;
     bool idEncontrado{false};
-    vector<string> registrosPorEstudiante;
-    array<string, 9> registroPorModificar;
+    vector<array<string, NUM_NUEVE>> registrosPorEstudiante;
+    array<string, NUM_NUEVE> registroPorModificar;
     array<double, NUM_CINCO> notasPorMateriaPorEstudiante;
     int indiceRegistro = 0;
+    string entrada;
+    bool opcionValida{false};
 
     idEstudiante = obtenerIdEstudiante();
     idEncontrado = existeEstudiante(idEstudiante, matrizEstudiantes);
@@ -989,26 +946,133 @@ void modificarRegistroNotas(const string& nombreArchivoEstudiantes, const vector
     if(idEncontrado) {
         cout << "Estudiante registrado. " << endl;
         cout << endl;
-        // Hacer lo que tiene que hacer
-        registrosPorEstudiante = buscarMateriasRegistradasEnArchivo(idEstudiante); // vector con todos los registros que coincidan con el ide del estudiante
-        registroPorModificar = mostrarMateriasRegistradasPorEstudiante(registrosPorEstudiante);
-        salvarNotasModificadasEnArchivo(registroPorModificar);
+        // Buscarlo en el archivo de notas
+
+        //registrosPorEstudiante =
+        buscarMateriasRegistradasPorEstudiante(idEstudiante, matrizNotas); // vector con todos los registros que coincidan con el ide del estudiante
+//        registroPorModificar = mostrarMateriasRegistradasPorEstudiante(registrosPorEstudiante);
+//        salvarNotasModificadasEnArchivo(registroPorModificar);
+
+         // Sobrescribir el archivo de notas con los registros actualizados
+        if (sobrescribirArchivoNotas(archivoNotas, matrizNotas)) {
+            cout << "Registro de notas actualizado exitosamente." << endl;
+        } else {
+            cout << "ERROR: No se pudo actualizar el archivo." << endl;
+        }
+
+
     } else {
         cout << "Estudiante no registrado. " << endl;
+        cout << endl;
+
+        do {
+            entrada = obtenerInformacion("¿Desea ingresar otra identificación? [S/N]: ");
+
+            if (entrada.length() == 1) {
+                char opcion = tolower(entrada[0]);
+
+                switch (opcion) {
+                    case 's':
+                    case 'S':
+                        modificarRegistroNotas(archivoEstudiantes, matrizEstudiantes, archivoNotas, matrizNotas);
+                        opcionValida = true;
+                    case 'n':
+                    case 'N':
+                        opcionValida = true;
+                        break;
+                    default:
+                        cout << "Opción inválida. Ingrese solo [S/N]."<< endl;
+                        cout << endl;
+                        opcionValida = false;
+                        break;
+                }
+            } else {
+                cout << endl;
+                cout << "Opción inválida. Ingrese una opción válida [S/N]." << endl;
+            }
+        } while(!opcionValida);
+
     }
 
 }
 
-vector<string> buscarMateriasRegistradasEnArchivo(string idEstudiante) { // cambiar el tipo del return por un vector de arrays
-    vector<string> registroNotasPorIdEstudiante; // convertir este vector en un vector de arrays
-    // Extraer del archivo una matriz con todos los registros que coincidan con el id del estudiante y devolverlo
-    registroNotasPorIdEstudiante.push_back("Ana");
-    registroNotasPorIdEstudiante.push_back("Carlos");
-    registroNotasPorIdEstudiante.push_back("María");
-    registroNotasPorIdEstudiante.push_back("Luis");
-    registroNotasPorIdEstudiante.push_back("Elena");
+//vector<array<string, NUM_NUEVE>>
+void buscarMateriasRegistradasPorEstudiante(string idEstudiante, vector<array<string, NUM_NUEVE>>& matrizNotas) { // cambiar el tipo del return por un vector de arrays
+    vector<array<string, NUM_NUEVE>> registroNotasPorIdEstudiante;
+    vector<int> vectorDeIndices;
+    bool hayMateriasRegistradas{false};
+    string entrada;
+    int indice = -1;
+    array<double, NUM_CINCO> nuevasCalificaciones;
+    double nuevoPromedio;
+    string nuevoEstadoCurso;
+    array<string, NUM_NUEVE> nuevoRegistroNotas;
 
-    return registroNotasPorIdEstudiante;
+    for (size_t i = 0; i < matrizNotas.size(); ++i) {
+        if (matrizNotas[i][NUM_CERO] == idEstudiante) {
+            registroNotasPorIdEstudiante.push_back(matrizNotas[i]);
+            vectorDeIndices.push_back(i);
+        }
+    }
+
+    if (!registroNotasPorIdEstudiante.empty()) {
+        cout << "Registro de materias registradas:" << endl;
+
+        for (size_t i = 0; i < registroNotasPorIdEstudiante.size(); ++i) {
+            cout << left << setw(5) << "    " <<  "[" << i << "] " << registroNotasPorIdEstudiante[i][1] << endl;
+            cout << endl;
+        }
+
+
+        while (true) {
+            cout << "Ingrese el índice del ítem que desea editar: ";
+            getline(cin, entrada);
+
+            try {
+                indice = stoi(entrada);
+
+                // Validar el rango
+                if (indice >= NUM_CERO && static_cast<size_t>(indice) < registroNotasPorIdEstudiante.size()) {
+                    cout << "Índice ingresado: " << indice << endl;
+                    cout << endl;
+                    cout << "Notas actuales para " << matrizNotas[vectorDeIndices[indice]][1] << endl;
+                    cout << "   - Proyecto 1: " << matrizNotas[vectorDeIndices[indice]][2] << endl;
+                    cout << "   - Proyecto 2: " << matrizNotas[vectorDeIndices[indice]][3] << endl;
+                    cout << "   - Ensayo: " << matrizNotas[vectorDeIndices[indice]][4] << endl;
+                    cout << "   - Foro: " << matrizNotas[vectorDeIndices[indice]][5] << endl;
+                    cout << "   - Defensa: " << matrizNotas[vectorDeIndices[indice]][6] << endl;
+                    break;
+                } else {
+                    cout << "ERROR: Número fuera del rango. Intente de nuevo." << endl;
+                }
+
+            } catch (const invalid_argument&) {
+                cout << "ERROR: Entrada inválida. Ingrese un número entero." << endl;
+            } catch (const out_of_range&) {
+                cout << "ERROR: Número fuera del rango. Intente con un valor válido." << endl;
+            }
+        }
+
+        cout << "Aqui veremos si el Índice es el correcto: " <<  matrizNotas[vectorDeIndices[indice]][1];
+        cout << endl;
+
+        nuevasCalificaciones = solicitarCalificaciones();
+        nuevoPromedio = calcularPromedio(nuevasCalificaciones);
+        nuevoEstadoCurso = determinarResultado(nuevoPromedio);
+
+        mostrarResultadoCurso(nuevoPromedio, nuevoEstadoCurso);
+
+        nuevoRegistroNotas = guardarNotasEnArreglo(idEstudiante, matrizNotas[vectorDeIndices[indice]][1], nuevasCalificaciones, nuevoPromedio, nuevoEstadoCurso);
+
+        matrizNotas[vectorDeIndices[indice]] = nuevoRegistroNotas;
+
+
+    } else {
+        cout << "El estudiante con cédula " << idEstudiante << " no tiene materias registradas." << endl;
+        cout << endl;
+    }
+
+    //return registroNotasPorIdEstudiante;
 }
 
 // Muestra todas los cursos que coincidan con el id del estudiante y devuelve el registro basado en la materia seleccionada por el usuario
