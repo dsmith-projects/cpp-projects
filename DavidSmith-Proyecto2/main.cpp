@@ -20,6 +20,7 @@
 using namespace std;
 
 constexpr size_t NUM_CERO = 0; // Índice que contiene el id de un estudiante
+constexpr size_t NUM_UNO = 1; // Índice que contiene el nombre del estudiante o de la materia
 constexpr size_t NUM_CINCO = 5;
 constexpr size_t NUM_SIETE = 7; // constexpr es una constante computada en tiempo de compilación y no en tiempo de ejecución
 constexpr size_t NUM_NUEVE = 9;
@@ -64,7 +65,7 @@ void buscarMateriasRegistradasPorEstudiante(string, vector<array<string, NUM_NUE
 array<string, 9> mostrarMateriasRegistradasPorEstudiante(vector<string>&);
 void salvarNotasModificadasEnArchivo(array<string, NUM_NUEVE>&);
 void reporteEstudiantes(const string&, const vector<RegistroEstudiante>&, const string&, const vector<array<string, NUM_NUEVE>>&);
-
+string conseguirNombreEstudiante(const string, const vector<RegistroEstudiante>&);
 
 int main()
 {
@@ -949,7 +950,7 @@ void modificarRegistroNotas(const string& archivoEstudiantes, const vector<Regis
         // Buscarlo en el archivo de notas
 
         //registrosPorEstudiante =
-        buscarMateriasRegistradasPorEstudiante(idEstudiante, matrizNotas); // vector con todos los registros que coincidan con el ide del estudiante
+        buscarMateriasRegistradasPorEstudiante(idEstudiante, matrizNotas); // vector con todos los registros que coincidan con el id del estudiante
 //        registroPorModificar = mostrarMateriasRegistradasPorEstudiante(registrosPorEstudiante);
 //        salvarNotasModificadasEnArchivo(registroPorModificar);
 
@@ -1180,6 +1181,62 @@ void reporteEstudiantes(const string& archivoEstudiantes, const vector<RegistroE
     }
     cout << endl;
 
+
+    // Reporte de calificaciones por estudiante. Combinación de archivos.
+    /*
+    Pasos:
+        1. recorrer notas.txt
+        2. tomar el indice = 0 (id del estudiante)
+        3. obtener el nombre del estudiante con el id
+        4. imprimir de notas.txt los indices 0, meter el indice 1 de estudiantes txt, 1, 7, 8
+    */
+    // Defino la cantidad de caracteres de cada columna
+    const int anchoColmnaR[NUM_NUEVE] = {15, 30, 20, 0, 0, 0, 0, 15, 15};
+
+    // Encabezados de la tabla
+    cout << left;
+    cout << setw(anchoColmnaR[0]) << "Cédula"
+        << setw(anchoColmnaR[1]) << "Nombre"
+        << setw(anchoColmnaR[2]) << "Materia"
+        << setw(anchoColmnaR[7]) << "Promedio"
+        << setw(anchoColmnaR[8]) << "Estado"
+        << endl;
+
+    cout << string(115, '-') << endl;
+
+    for (const auto& registro : matrizNotas) {
+        for (size_t i = 0; i < NUM_NUEVE; ++i) {
+            if(NUM_CERO == i) {
+                cout << setw(anchoColmnaR[i]) << registro[i];
+            }
+            if(NUM_UNO == i) {
+                cout << setw(anchoColmnaR[i]) << conseguirNombreEstudiante(registro[NUM_CERO], matrizEstudiantes);
+            }
+            if(2 == i) {
+                cout << setw(anchoColmnaR[i]) << registro[NUM_UNO];
+            }
+            if(7 == i) {
+                cout << setw(anchoColmnaR[i]) << registro[i];
+            }
+            if(8 == i) {
+                cout << setw(anchoColmnaR[i]) << registro[i];
+            }
+        }
+        cout << endl;
+    }
+    cout << endl;
+
+}
+
+string conseguirNombreEstudiante(const string id, const vector<RegistroEstudiante>& matrizEstudiantes) {
+    string nombreEstudiante{"sin nombre"};
+
+    for (const auto& registro : matrizEstudiantes) {
+        if (registro[NUM_CERO] == id) {
+            nombreEstudiante = registro[NUM_UNO];
+        }
+    }
+    return nombreEstudiante; // devuelve el nombre del estudiantes
 
 }
 
