@@ -66,6 +66,7 @@ array<string, 9> mostrarMateriasRegistradasPorEstudiante(vector<string>&);
 void salvarNotasModificadasEnArchivo(array<string, NUM_NUEVE>&);
 void reporteEstudiantes(const string&, const vector<RegistroEstudiante>&, const string&, const vector<array<string, NUM_NUEVE>>&);
 string conseguirNombreEstudiante(const string, const vector<RegistroEstudiante>&);
+void eliminarEstudiante(const string&, vector<RegistroEstudiante>&, const string&, vector<array<string, NUM_NUEVE>>&);
 
 int main()
 {
@@ -126,7 +127,7 @@ int main()
                 continuar();
                 break;
             case 5:
-                cout << "Test" << endl;
+                eliminarEstudiante(nombreArchivoEstudiantes, listaEstudiantes, nombreArchivoNotas, notasEstudiantes);
                 break;
             case 6:
                 reporteEstudiantes(nombreArchivoEstudiantes, listaEstudiantes, nombreArchivoNotas, notasEstudiantes);
@@ -954,7 +955,7 @@ void modificarRegistroNotas(const string& archivoEstudiantes, const vector<Regis
 //        registroPorModificar = mostrarMateriasRegistradasPorEstudiante(registrosPorEstudiante);
 //        salvarNotasModificadasEnArchivo(registroPorModificar);
 
-         // Sobrescribir el archivo de notas con los registros actualizados
+        // Sobrescribir el archivo de notas con los registros actualizados
         if (sobrescribirArchivoNotas(archivoNotas, matrizNotas)) {
             cout << "Registro de notas actualizado exitosamente." << endl;
         } else {
@@ -1237,6 +1238,105 @@ string conseguirNombreEstudiante(const string id, const vector<RegistroEstudiant
         }
     }
     return nombreEstudiante; // devuelve el nombre del estudiantes
+
+}
+
+void eliminarEstudiante(const string& archivoEstudiantes, vector<RegistroEstudiante>& matrizEstudiantes, const string& archivoNotas, vector<array<string, NUM_NUEVE>>& matrizNotas) {
+    // Solicitar el id del estudiante a borrar
+    // verificar que existe
+    // Preguntar si desea borrarlo
+    // si existe buscarlo en el archivo de notas
+    // borrarlo del archivo de notas
+    // borrarlo del archivo estudiantes
+    string idEstudiante;
+    bool intentarDeNuevo{false};
+    bool borrarRegistrosEstudiante{false};
+    bool borrarNuevoRegistro{false};
+
+    while (true) {
+        idEstudiante = obtenerIdEstudiante();
+        cout << endl;
+
+        if (!existeEstudiante(idEstudiante, matrizEstudiantes)) {
+            cout << "No se encontraron registros de la identificación del estudiante." << endl;
+            cout << endl;
+
+            intentarDeNuevo = hacerPreguntaDeRespuestaBinaria("¿Desea intentar de nuevo? [S/N]: ");
+
+            if(intentarDeNuevo) {
+                continue; // comienza una nueva iteración del ciclo
+            } else {
+                cout << "Regresando al menú..." << endl;
+                return;
+            }
+        }
+
+        cout << "¿Desea eliminar el estudiantes y todos sus registros de notas asociadas?" << endl;
+        cout << endl;
+
+        borrarRegistrosEstudiante = hacerPreguntaDeRespuestaBinaria("Confirmo el borrado de todos los registros. [S/N]: ");
+
+        if (!borrarRegistrosEstudiante) {
+
+            borrarNuevoRegistro = hacerPreguntaDeRespuestaBinaria("¿Desea borrar otro estudiante? [S/N]: ");
+
+            if(borrarNuevoRegistro) {
+                continue; // comienza una nueva iteración del ciclo
+            } else {
+                cout << "Regresando al menú..." << endl;
+                return;
+            }
+
+        }
+
+        // Borrar registros
+        cout << "Borrando registros... " << endl;
+        cout << endl;
+
+        //---------------BORRADO DE LOS REGISTROS DE NOTAS DE UN ESTUDIANTE------------------
+        // Itero de atrás para adelante para evitar un error que sucedía en casa de que hubiese que borrar el primer elemento del vector
+        // ya que al iterar y borrar elementos, se incrementaba el contador primero lo que hacía que se saltara el borrado del primer elemento
+        for (int i = static_cast<int>(matrizNotas.size()) - 1; i >= 0; --i) {
+
+            if (matrizNotas[i][NUM_CERO] == idEstudiante) {
+                 matrizNotas.erase(matrizNotas.begin() + i);
+            }
+        }
+
+        cout << "Se han borrado todos los registros de calificaciones del estudiante." << endl;
+        cout << endl;
+
+        // Sobrescribir el archivo de notas con los registros actualizados
+        if (sobrescribirArchivoNotas(archivoNotas, matrizNotas)) {
+            cout << "Registro de notas actualizado exitosamente." << endl;
+        } else {
+            cout << "ERROR: No se pudo actualizar el archivo." << endl;
+        }
+
+        //---------------BORRADO DEL REGISTRO DE ESTUDIANTE------------------
+        // Itero de atrás para adelante para evitar un error que sucedía en casa de que hubiese que borrar el primer elemento del vector
+        // ya que al iterar y borrar elementos, se incrementaba el contador primero lo que hacía que se saltara el borrado del primer elemento
+        for (int i = static_cast<int>(matrizEstudiantes.size()) - 1; i >= 0; --i) {
+
+            if (matrizEstudiantes[i][NUM_CERO] == idEstudiante) {
+                 matrizEstudiantes.erase(matrizEstudiantes.begin() + i);
+            }
+        }
+
+        cout << "Se han borrado todos los registros del estudiante " << endl;
+        cout << endl;
+
+        // Sobrescribir el archivo de estudiantes con los registros actualizados
+        if (sobrescribirArchivoEstudiantes(archivoEstudiantes, matrizEstudiantes)) {
+            cout << "Registro de estudiante actualizado exitosamente." << endl;
+        } else {
+            cout << "ERROR: No se pudo actualizar el archivo." << endl;
+        }
+
+        return;
+    }
+
+    return;
 
 }
 
