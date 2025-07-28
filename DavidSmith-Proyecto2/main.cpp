@@ -67,6 +67,7 @@ void salvarNotasModificadasEnArchivo(array<string, NUM_NUEVE>&);
 void reporteEstudiantes(const string&, const vector<RegistroEstudiante>&, const string&, const vector<array<string, NUM_NUEVE>>&);
 string conseguirNombreEstudiante(const string, const vector<RegistroEstudiante>&);
 void eliminarEstudiante(const string&, vector<RegistroEstudiante>&, const string&, vector<array<string, NUM_NUEVE>>&);
+bool terminarPrograma();
 
 int main()
 {
@@ -86,17 +87,17 @@ int main()
 
 
     if (cargarArchivoEstudiantesEnMemoria(nombreArchivoEstudiantes, listaEstudiantes)) {
-        cout << "   - ATENCION: Se cargaron " << listaEstudiantes.size() << " registros de estudiantes." << endl;
+        cout << "    - ATENCION: Se cargaron " << listaEstudiantes.size() << " registros de estudiantes." << endl;
     } else {
-        cout << "   - Puede que el archivo estudiantes.txt no exista." << endl;
+        cout << "    - ATENCION: Puede que el archivo estudiantes.txt no exista." << endl;
         cout << endl;
     }
 
     if (cargarArchivoNotasEnMemoria(nombreArchivoNotas, notasEstudiantes)) {
-        cout << "   - ATENCION: Se cargaron " << notasEstudiantes.size() << " registros de calificaciones." << endl;
+        cout << "    - ATENCION: Se cargaron " << notasEstudiantes.size() << " registros de calificaciones." << endl;
         cout << endl;
     } else {
-        cout << "   - ATENCION: Puede que el archivo notas.txt no exista." << endl;
+        cout << "    - ATENCION: Puede que el archivo notas.txt no exista." << endl;
         cout << endl;
     }
 
@@ -138,7 +139,10 @@ int main()
                 continuar();
                 break;
             case 7:
-                salir = true;
+                salir = terminarPrograma();
+                if(!salir) {
+                    continuar();
+                }
                 break;
             default:
                 cout << "Opcion invalida, vuelva a intentarlo." << endl;
@@ -483,6 +487,7 @@ string obtenerEdadEstudiante(){
                 break;
             } else {
                 cout << "Edad invalida. Ingrese una edad numerica entre 18 y 100." << endl;
+                cout << endl;
             }
         } else {
             cout << "Edad invalida. Ingrese una edad numerica entre 18 y 100, sin letras, ni espacios en blanco." << endl;
@@ -639,6 +644,7 @@ void ingresarCalificaciones(const string& archivoEstudiantes, const vector<Regis
 
         do {
             entrada = obtenerInformacion("¿Desea ingresar otra identificacion? [S/N]: ");
+            cout << endl;
 
             if (entrada.length() == 1) {
                 char opcion = tolower(entrada[0]);
@@ -1224,12 +1230,6 @@ string conseguirNombreEstudiante(const string id, const vector<RegistroEstudiant
 }
 
 void eliminarEstudiante(const string& archivoEstudiantes, vector<RegistroEstudiante>& matrizEstudiantes, const string& archivoNotas, vector<array<string, NUM_NUEVE>>& matrizNotas) {
-    // Solicitar el id del estudiante a borrar
-    // verificar que existe
-    // Preguntar si desea borrarlo
-    // si existe buscarlo en el archivo de notas
-    // borrarlo del archivo de notas
-    // borrarlo del archivo estudiantes
     string idEstudiante;
     bool intentarDeNuevo{false};
     bool borrarRegistrosEstudiante{false};
@@ -1323,5 +1323,23 @@ void eliminarEstudiante(const string& archivoEstudiantes, vector<RegistroEstudia
     }
 
     return;
-
 }
+
+bool terminarPrograma() {
+    string respuesta;
+
+    while (true) {
+        respuesta = obtenerInformacion("¿Desea salir del programa? (S/N): ");
+        cout << endl;
+
+        if (respuesta == "s" || respuesta == "S") {
+            return true;
+        } else if (respuesta == "n" || respuesta == "N") {
+            return false;
+        } else {
+            cout << "    - ERROR: Entrada invalida. Ingrese solo [S/N]." << endl;
+            cout << endl;
+        }
+    }
+}
+
