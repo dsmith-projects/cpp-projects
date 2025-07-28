@@ -1,7 +1,7 @@
 // David Smith Slano
 // 6 de julio
 // Proyecto 2: este proyecto trata del manejo de estudiantes y de notas de estudiantes de diferentes cursos.
-// El programa tambien permite hacer operaciones CRUD de estudiantes y notas y persistencia de datos en archivos.
+// El programa tambien permite hacer operaciones CRUD con estudiantes y notas y hay persistencia de datos en archivos.
 
 #include <iostream>
 #include <locale>
@@ -9,7 +9,6 @@
 #include <array>
 #include <vector>
 #include <iomanip> // Para el manejo y manipulacion de los caracteres de salida para que tengan formato
-
 #include <cstdlib> // Prototipo de exit
 
 // Para el manejo de archivos
@@ -146,13 +145,13 @@ int main()
                 }
                 break;
             default:
-                cout << "Opcion invalida, vuelva a intentarlo." << endl;
+                cout << "    - ERROR: Opcion invalida, vuelva a intentarlo." << endl;
                 cout << endl;
                 break;
             }
         } catch (exception& e) {
 
-            cout << "ERROR: Entrada invalida. Por favor, ingrese una opcion de menu valida." << endl;
+            cout << "    - ERROR: Entrada invalida. Por favor, ingrese una opcion de menu valida." << endl;
             cout << endl;
         }
 
@@ -250,7 +249,7 @@ bool agregarEstudianteAlArchivo(const string& archivoEstudiantes, const array<st
     ofstream archivo(archivoEstudiantes, ios::app); // Abre el archivo en modo de agregar nuevos estudiantes
 
     if (!archivo.is_open()) {
-        cerr << "    - EEROR: No se pudo abrir el archivo '" << archivoEstudiantes << "' para agregar nuevos estudiantes." << endl;
+        cerr << "    - ERROR: No se pudo abrir el archivo '" << archivoEstudiantes << "' para agregar nuevos estudiantes." << endl;
         return false;
     }
 
@@ -335,13 +334,13 @@ void mostrarMenu() {
     cout << " " << string(114, '-') << endl;
     cout << endl;
 
-    cout << "1. Registrar estudiante" << endl;
-    cout << "2. Ingresar calificaciones" << endl;
-    cout << "3. Modificar datos del estudiante" << endl;
-    cout << "4. Modificar notas por estudiante" << endl;
-    cout << "5. Eliminar registro de estudiante" << endl;
-    cout << "6. Reporte de estudiantes y calificaciones finales" << endl;
-    cout << "7. Salir del programa" << endl;
+    cout << "    " << left << setw(15) << "1. Registrar estudiante" << endl;
+    cout << "    " << left << setw(15) << "2. Ingresar calificaciones" << endl;
+    cout << "    " << left << setw(15) << "3. Modificar datos del estudiante" << endl;
+    cout << "    " << left << setw(15) << "4. Modificar notas por estudiante" << endl;
+    cout << "    " << left << setw(15) << "5. Eliminar registro de estudiante" << endl;
+    cout << "    " << left << setw(15) << "6. Reporte de estudiantes y calificaciones finales" << endl;
+    cout << "    " << left << setw(15) << "7. Salir del programa" << endl;
     cout << endl;
 }
 
@@ -433,7 +432,7 @@ string obtenerIdEstudiante(){
         if(esIdValido(identificacion)) {
             idEstudianteValido = true;
         } else {
-            cout << "Identificacion invalida. Ingrese una identificacion de 10 digitos, sin letras, ni espacios en blanco." << endl;
+            cout << "    - ERROR: Identificacion invalida. Ingrese una identificacion de 10 digitos, sin letras, ni espacios en blanco." << endl;
             cout << endl;
         }
 
@@ -488,11 +487,11 @@ string obtenerEdadEstudiante(){
                 edadEstudianteValida = true;
                 break;
             } else {
-                cout << "Edad invalida. Ingrese una edad numerica entre 18 y 100." << endl;
+                cout << "    - ERROR: Edad invalida. Ingrese una edad numerica entre 18 y 100." << endl;
                 cout << endl;
             }
         } else {
-            cout << "Edad invalida. Ingrese una edad numerica entre 18 y 100, sin letras, ni espacios en blanco." << endl;
+            cout << "    - ERROR: Edad invalida. Ingrese una edad numerica entre 18 y 100, sin letras, ni espacios en blanco." << endl;
             cout << endl;
         }
 
@@ -567,7 +566,7 @@ string obtenerGenero() {
             }
         }
         cout << endl;
-        cout << "Opcion invalida. Ingrese una opcion de genero valida.\n";
+        cout << "    - ERROR: Opcion invalida. Ingrese una opcion de genero valida.\n";
     } while (!opcionValida);
 }
 
@@ -613,33 +612,41 @@ void ingresarCalificaciones(const string& archivoEstudiantes, const vector<Regis
         cout << "    - ATENCION: El estudiante se encuentra registrado." << endl;
         cout << endl;
 
-        materia = obtenerInformacion("Ingrese el nombre de la materia que cursa: ");
-        notas = solicitarCalificaciones();
+        while (true) {
+            materia = obtenerInformacion("Ingrese el nombre de la materia que cursa: ");
+            notas = solicitarCalificaciones();
+    //        mostrarNotas(notas);
+            promedio = calcularPromedio(notas);
+            estadoCurso = determinarResultado(promedio);
 
-//        mostrarNotas(notas);
+            mostrarResultadoCurso(promedio, estadoCurso);
 
-        promedio = calcularPromedio(notas);
-        estadoCurso = determinarResultado(promedio);
+            calificaciones = guardarNotasEnArreglo(idEstudiante, materia, notas, promedio, estadoCurso);
+            cout << endl;
 
-        mostrarResultadoCurso(promedio, estadoCurso);
+            if(agregarNotasAlArchivo(archivoNotas, calificaciones)) {
+                cout << "    - ATENCION: Notas registradas con exito en NOTAS.txt." << endl;
+            } else {
+                cout << "    - ATENCION: No se pudo registrar las notas en el archivo NOTAS.txt." << endl;
+            }
+            // actualizar memoria volatil
+            if(cargarArchivoNotasEnMemoria(archivoNotas, matrizNotas)) {
+                cout << "    - ATENCION: Memoria actualizada con nuevo conjunto de notas." << endl;
+            } else {
+                cout << "    - ATENCION: Memoria NO actualizada con nuevo conjunto de notas." << endl;
+            }
 
-        calificaciones = guardarNotasEnArreglo(idEstudiante, materia, notas, promedio, estadoCurso);
-        cout << endl;
+            cout << endl;
 
-        if(agregarNotasAlArchivo(archivoNotas, calificaciones)) {
-            cout << "    - ATENCION: Notas registradas con exito en NOTAS.txt." << endl;
-        } else {
-            cout << "    - ATENCION: No se pudo registrar las notas en el archivo NOTAS.txt." << endl;
+            bool agregarNuevaMateria = hacerPreguntaDeRespuestaBinaria("¿Desea agregar notas de otra materia? (S/N): ");
+            cout << endl;
+
+            if (agregarNuevaMateria) {
+                continue;
+            } else {
+                break;
+            }
         }
-        // actualizar memoria volatil
-        if(cargarArchivoNotasEnMemoria(archivoNotas, matrizNotas)) {
-            cout << "    - ATENCION: Memoria actualizada con nuevo conjunto de notas." << endl;
-        } else {
-            cout << "    - ATENCION: Memoria NO actualizada con nuevo conjunto de notas." << endl;
-        }
-        cout << endl;
-
-
     } else {
         cout << "Estudiante no registrado. " << endl;
         cout << endl;
@@ -661,14 +668,14 @@ void ingresarCalificaciones(const string& archivoEstudiantes, const vector<Regis
                         opcionValida = true;
                         break;
                     default:
-                        cout << "Opcion invalida. Ingrese solo [S/N]."<< endl;
+                        cout << "    - ERROR: Opcion invalida. Ingrese solo [S/N]."<< endl;
                         cout << endl;
                         opcionValida = false;
                         break;
                 }
             } else {
                 cout << endl;
-                cout << "    - ATENCION: Opcion invalida. Ingrese una opcion valida [S/N]." << endl;
+                cout << "    - ERROR: Opcion invalida. Ingrese una opcion valida [S/N]." << endl;
                 cout << endl;
             }
         } while(!opcionValida);
@@ -757,11 +764,11 @@ array<double, NUM_CINCO> solicitarCalificaciones() {
                     notas[i] = nota;
                     break;
                 } else {
-                    cout << "La nota debe estar entre 0.0 y 10.0." << endl;
+                    cout << "    - ATENCION: La nota debe estar entre 0.0 y 10.0." << endl;
                     cout << endl;
                 }
             } catch (...) {
-                cout << "Calificacion invalida. Ingrese una nota valida." << endl;
+                cout << "    - ERROR: Calificacion invalida. Ingrese una nota valida." << endl;
                 cout << endl;
             }
         }
@@ -832,7 +839,7 @@ void modificarDatosEstudiante(const string& archivoEstudiantes, vector<RegistroE
         cout << endl;
 
         if (!existeEstudiante(idEstudiante, matrizEstudiantes)) {
-            cout << "No se encontraron registros de la identificacion del estudiante." << endl;
+            cout << "    - ATENCION: No se encontraron registros de la identificacion del estudiante." << endl;
             cout << endl;
 
             intentarDeNuevo = hacerPreguntaDeRespuestaBinaria("¿Desea intentar de nuevo? [S/N]: ");
@@ -888,12 +895,12 @@ void modificarDatosEstudiante(const string& archivoEstudiantes, vector<RegistroE
                                 salirCiclo = true;
                                 break;
                             default:
-                                cout << "Opcion invalida, vuelva a intentarlo." << endl;
+                                cout << "    - ERROR: Opcion invalida, vuelva a intentarlo." << endl;
                                 cout << endl;
                                 break;
                         }
                     } catch (exception& e) {
-                        cout << "ERROR: Entrada invalida. Por favor, ingrese una opcion valida." << endl;
+                        cout << "    - ERROR: Entrada invalida. Por favor, ingrese una opcion valida." << endl;
                         cout << endl;
                     }
 
@@ -909,7 +916,7 @@ void modificarDatosEstudiante(const string& archivoEstudiantes, vector<RegistroE
             cout << "    - ATENCION: Registro de estudiante actualizado exitosamente." << endl;
             cout << endl;
         } else {
-            cout << "ERROR: No se pudo actualizar el archivo." << endl;
+            cout << "    - ERROR: No se pudo actualizar el archivo." << endl;
             cout << endl;
         }
 
@@ -936,14 +943,14 @@ bool hacerPreguntaDeRespuestaBinaria(const string& pregunta) {
                     return false;
                     break;
                 default:
-                    cout << "Opcion invalida. Ingrese solo [S/N]."<< endl;
+                    cout << "    - ERROR: Opcion invalida. Ingrese solo [S/N]."<< endl;
                     cout << endl;
                     opcionValida = false;
                     break;
             }
         } else {
             cout << endl;
-            cout << "Opcion invalida. Ingrese una opcion valida, solo [S/N]." << endl;
+            cout << "    - ERROR: Opcion invalida. Ingrese una opcion valida, solo [S/N]." << endl;
         }
     } while(!opcionValida);
 
@@ -1064,15 +1071,15 @@ void buscarMateriasRegistradasPorEstudiante(string idEstudiante, vector<array<st
 
                     break;
                 } else {
-                    cout << "ERROR: Numero fuera del rango. Intente de nuevo." << endl;
+                    cout << "    - ERROR: Numero fuera del rango. Intente de nuevo." << endl;
                     cout << endl;
                 }
 
             } catch (const invalid_argument&) {
-                cout << "ERROR: Entrada invalida. Ingrese un numero entero." << endl;
+                cout << "    - ERROR: Entrada invalida. Ingrese un numero entero." << endl;
                 cout << endl;
             } catch (const out_of_range&) {
-                cout << "ERROR: Numero fuera del rango. Intente con un valor valido." << endl;
+                cout << "    - ERROR: Numero fuera del rango. Intente con un valor valido." << endl;
                 cout << endl;
             }
         }
@@ -1251,7 +1258,7 @@ void eliminarEstudiante(const string& archivoEstudiantes, vector<RegistroEstudia
         cout << endl;
 
         if (!existeEstudiante(idEstudiante, matrizEstudiantes)) {
-            cout << "No se encontraron registros de la identificacion del estudiante." << endl;
+            cout << "    - ATENCION: No se encontraron registros para la identificacion ingresada." << endl;
             cout << endl;
 
             intentarDeNuevo = hacerPreguntaDeRespuestaBinaria("¿Desea intentar de nuevo? [S/N]: ");

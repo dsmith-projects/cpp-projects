@@ -5,3 +5,4 @@
 0123456789,Angel Vargas Blanco,San Jose,Alajuelita,La Cruz,18,masculino
 0122223333,Santos Toro Conejo,Cartago,Turrialba,Santa Cruz,62,masculino
 0144445555,Karla Perez Madrigal,Heredia,San Isidro,Flores,36,femenino
+0112341234,Jose Pablo Ramirez Sancho,San Jose,San Francisco,Rios,28,masculino
