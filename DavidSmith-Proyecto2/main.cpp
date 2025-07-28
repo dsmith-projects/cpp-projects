@@ -60,11 +60,12 @@ void mostrarResultadoCurso(double, string);
 void modificarDatosEstudiante(const string&, vector<RegistroEstudiante>&);
 bool hacerPreguntaDeRespuestaBinaria(const string&);
 void modificarRegistroNotas(const string&, const vector<RegistroEstudiante>&, const string&, vector<array<string, NUM_NUEVE>>&);
-//vector<array<string, NUM_NUEVE>>
 void buscarMateriasRegistradasPorEstudiante(string, vector<array<string, NUM_NUEVE>>&);
 void mostrarMateriasRegistradasPorEstudiante(const vector<array<string, NUM_NUEVE>>&);
 void salvarNotasModificadasEnArchivo(array<string, NUM_NUEVE>&);
-void reporteEstudiantes(const string&, const vector<RegistroEstudiante>&, const string&, const vector<array<string, NUM_NUEVE>>&);
+void reporteEstudiantesYNotasFinales(const string&, const vector<RegistroEstudiante>&, const string&, const vector<array<string, NUM_NUEVE>>&);
+void reporteEstudiantes(const vector<RegistroEstudiante>&);
+void reporteCalificaciones(const vector<array<string, NUM_NUEVE>>&);
 string conseguirNombreEstudiante(const string, const vector<RegistroEstudiante>&);
 void eliminarEstudiante(const string&, vector<RegistroEstudiante>&, const string&, vector<array<string, NUM_NUEVE>>&);
 bool terminarPrograma();
@@ -135,7 +136,7 @@ int main()
                 continuar();
                 break;
             case 6:
-                reporteEstudiantes(nombreArchivoEstudiantes, listaEstudiantes, nombreArchivoNotas, notasEstudiantes);
+                reporteEstudiantesYNotasFinales(nombreArchivoEstudiantes, listaEstudiantes, nombreArchivoNotas, notasEstudiantes);
                 continuar();
                 break;
             case 7:
@@ -469,7 +470,8 @@ string obtenerInformacion(const string& enunciado) {
             return datos;
         }
 
-        cout << "Ingrese un valor. Intente de nuevo." << endl;
+        cout << "    - ERROR: Ingrese un valor. Intente de nuevo." << endl;
+        cout << endl;
     }
 
 }
@@ -1110,12 +1112,61 @@ void mostrarMateriasRegistradasPorEstudiante(const vector<array<string, NUM_NUEV
 
 // Opcion 6: Reporte de estudiantes - calificaciones finales
 
-void reporteEstudiantes(const string& archivoEstudiantes, const vector<RegistroEstudiante>& matrizEstudiantes, const string& archivoNotas, const vector<array<string, NUM_NUEVE>>& matrizNotas) {
+void reporteEstudiantesYNotasFinales(const string& archivoEstudiantes, const vector<RegistroEstudiante>& matrizEstudiantes, const string& archivoNotas, const vector<array<string, NUM_NUEVE>>& matrizNotas) {
+    // Reporte de calificaciones por estudiante. Combinacion de archivos.
     cout << " " << string(114, '-') << endl;
     cout << "| " << left << setw(38) << "REPORTE DE ESTUDIANTES - NOTAS FINALES" << right << setw(76) << "|" << endl;
     cout << " " << string(114, '-') << endl;
     cout << endl;
 
+//    reporteEstudiantes(matrizEstudiantes);
+//    reporteCalificaciones(matrizNotas);
+
+    // Defino la cantidad de caracteres de cada columna
+    const int anchoColmnaR[NUM_NUEVE] = {15, 30, 20, 0, 0, 0, 0, 15, 15};
+
+    if (matrizNotas.empty() || matrizEstudiantes.empty()) {
+        cout << "    - ATENCION: No hay datos que reportar. Ingrese estudiantes y notas para generar un reporte." << endl;
+        cout << endl;
+    } else {
+        // Encabezados de la tabla
+        cout << left;
+        cout << setw(anchoColmnaR[0]) << "Cedula"
+            << setw(anchoColmnaR[1]) << "Nombre"
+            << setw(anchoColmnaR[2]) << "Materia"
+            << setw(anchoColmnaR[7]) << "Promedio"
+            << setw(anchoColmnaR[8]) << "Estado"
+            << endl;
+
+        cout << string(115, '-') << endl;
+
+        for (const auto& registro : matrizNotas) {
+            for (size_t i = 0; i < NUM_NUEVE; ++i) {
+                if(NUM_CERO == i) {
+                    cout << setw(anchoColmnaR[i]) << registro[i];
+                }
+                if(NUM_UNO == i) {
+                    cout << setw(anchoColmnaR[i]) << conseguirNombreEstudiante(registro[NUM_CERO], matrizEstudiantes);
+                }
+                if(2 == i) {
+                    cout << setw(anchoColmnaR[i]) << registro[NUM_UNO];
+                }
+                if(7 == i) {
+                    cout << setw(anchoColmnaR[i]) << registro[i];
+                }
+                if(8 == i) {
+                    cout << setw(anchoColmnaR[i]) << registro[i];
+                }
+            }
+            cout << endl;
+        }
+        cout << string(115, '-') << endl;
+        cout << endl;
+
+    }
+}
+
+void reporteEstudiantes(const vector<RegistroEstudiante>& matrizEstudiantes) {
     // Defino la cantidad de caracteres de cada columna
     const int anchoColmna[NUM_SIETE] = {15, 30, 12, 20, 20, 6, 12};
 
@@ -1141,8 +1192,9 @@ void reporteEstudiantes(const string& archivoEstudiantes, const vector<RegistroE
     }
     cout << endl;
 
+}
 
-
+void reporteCalificaciones(const vector<array<string, NUM_NUEVE>>& matrizNotas) {
     // Defino la cantidad de caracteres de cada columna
     const int anchoColmnaN[NUM_NUEVE] = {15, 20, 11, 11, 11, 11, 11, 11, 10};
 
@@ -1169,52 +1221,6 @@ void reporteEstudiantes(const string& archivoEstudiantes, const vector<RegistroE
         cout << endl;
     }
     cout << endl;
-
-
-    // Reporte de calificaciones por estudiante. Combinacion de archivos.
-    /*
-    Pasos:
-        1. recorrer notas.txt
-        2. tomar el indice = 0 (id del estudiante)
-        3. obtener el nombre del estudiante con el id
-        4. imprimir de notas.txt los indices 0, meter el indice 1 de estudiantes txt, 1, 7, 8
-    */
-    // Defino la cantidad de caracteres de cada columna
-    const int anchoColmnaR[NUM_NUEVE] = {15, 30, 20, 0, 0, 0, 0, 15, 15};
-
-    // Encabezados de la tabla
-    cout << left;
-    cout << setw(anchoColmnaR[0]) << "Cedula"
-        << setw(anchoColmnaR[1]) << "Nombre"
-        << setw(anchoColmnaR[2]) << "Materia"
-        << setw(anchoColmnaR[7]) << "Promedio"
-        << setw(anchoColmnaR[8]) << "Estado"
-        << endl;
-
-    cout << string(115, '-') << endl;
-
-    for (const auto& registro : matrizNotas) {
-        for (size_t i = 0; i < NUM_NUEVE; ++i) {
-            if(NUM_CERO == i) {
-                cout << setw(anchoColmnaR[i]) << registro[i];
-            }
-            if(NUM_UNO == i) {
-                cout << setw(anchoColmnaR[i]) << conseguirNombreEstudiante(registro[NUM_CERO], matrizEstudiantes);
-            }
-            if(2 == i) {
-                cout << setw(anchoColmnaR[i]) << registro[NUM_UNO];
-            }
-            if(7 == i) {
-                cout << setw(anchoColmnaR[i]) << registro[i];
-            }
-            if(8 == i) {
-                cout << setw(anchoColmnaR[i]) << registro[i];
-            }
-        }
-        cout << endl;
-    }
-    cout << endl;
-
 }
 
 string conseguirNombreEstudiante(const string id, const vector<RegistroEstudiante>& matrizEstudiantes) {
