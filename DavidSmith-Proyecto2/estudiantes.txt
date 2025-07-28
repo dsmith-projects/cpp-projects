@@ -2,5 +2,6 @@
 0113654253,Josue Jimenez Castro,San Jose,Moravia,La Guaria,35,masculino
 0112330202,Diana Sanchez Perez,Heredia,San Pablo,Lomas,27,masculino
 0111331133,Ana Siles Cerdas,Cartago,Oreamuno,Rancho,22,femenino
-0113661344,Carmen,San Jose,San Isidro,Chirripo,64,masculino
-0123456789,Pito Vergon Blanco,Guanacaste,Liberia,Sabana Grande,45,no binario
+0123456789,Angel Vargas Blanco,San Jose,Alajuelita,La Cruz,18,masculino
+0122223333,Santos Toro Conejo,Cartago,Turrialba,Santa Cruz,62,masculino
+0144445555,Karla Perez Madrigal,Heredia,San Isidro,Flores,36,femenino
